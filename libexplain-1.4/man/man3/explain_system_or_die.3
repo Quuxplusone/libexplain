@@ -1,0 +1,138 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008, 2009, 2011 Peter Miller
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or (at
+.\" your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_system_or_die
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_system_or_die 3
+.SH NAME
+explain_system_or_die \- execute a shell command and report errors
+.if require_index \{
+.XX "explain_system_or_die(3)" "execute a shell command and report errors"
+.\}
+.SH SYNOPSIS
+#include <libexplain/system.h>
+.sp 0.3
+void explain_system_or_die(const char *command);
+.br
+void explain_system_success_or_die(const char *command);
+.br
+int explain_system_success(const char *command);
+.SH DESCRIPTION
+These functions may be used to execute commands via the
+\f[I]system\fP(3) function, and report the results.
+.\" ------------------------------------------------------------------------
+.SS explain_system_or_die
+void explain_system_or_die(const char *command);
+.PP
+The \f[B]explain_system_or_die\fP function
+is used to call the \f[I]system\fP(3) system
+call.  On failure an explanation will be
+printed to \f[I]stderr\fP,
+obtained from \f[I]explain_system\fP(3),
+and then the process terminates
+by calling \f[CW]exit(EXIT_FAILURE)\fP.
+.PP
+This function is intended to be used in a fashion
+similar to the following example:
+.RS
+.ft CW
+.nf
+int status = explain_system_or_die(command);
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]command\fP
+The command, exactly as to be passed to the \f[I]system\fP(3) system call.
+.TP 8n
+Returns:
+This function only returns on success,
+see \f[I]system\fP(3) for more information.
+On failure, prints an explanation and exits.
+.\" ------------------------------------------------------------------------
+.SS explain_system_success_or_die
+void explain_system_success_or_die(const char *command);
+.PP
+The \f[B]explain_system_success_or_die\fP function is used to call
+the \f[I]system\fP(3) system call.  On failure, including any exit
+status other than EXIT_SUCCESS, an explanation will be printed to
+\f[I]stderr\fP, obtained from \f[I]explain_system\fP(3), and then the
+process terminates by calling \f[CW]exit(EXIT_FAILURE)\fP.
+.PP
+This function is intended to be used in a fashion
+similar to the following example:
+.RS
+.ft CW
+.nf
+explain_system_success_or_die(command);
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]command\fP
+The command, exactly as to be passed to the \f[I]system\fP(3) system call.
+.TP 8n
+Returns:
+This function only returns on success.
+On failure, prints an explanation and exits.
+.\" ------------------------------------------------------------------------
+.SS explain_system_success
+int explain_system_success(const char *command);
+.PP
+The \f[B]explain_system_success\fP function is used to call
+the \f[I]system\fP(3) system call.  On failure, including any exit
+status other than EXIT_SUCCESS, an explanation will be printed to
+\f[I]stderr\fP, obtained from \f[I]explain_system\fP(3).
+However, the priniting of an error message does \f[B]not\fP
+also cause \f[I]exit\fP(2) to be called.
+.PP
+This function is intended to be used in a fashion
+similar to the following example:
+.RS
+.ft CW
+.nf
+int status = explain_system_success(command);
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]command\fP
+The command, exactly as to be passed to the \f[I]system\fP(3) system call.
+.TP 8n
+Returns:
+the value returned by the \f[I]system\fP(3) system call.
+In all cases other than EXIT_SUCCESS, an error message will also have
+been printed to stderr.
+.\" ------------------------------------------------------------------------
+.SH SEE ALSO
+.TP 8n
+\f[I]system\fP(3)
+execute a shell command
+.TP 8n
+\f[I]explain_system\fP(3)
+explain \f[I]system\fP(3) errors
+.TP 8n
+\f[I]exit\fP(2)
+terminate the calling process
+.\" ----------------------------------------------------
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2008 Peter Miller

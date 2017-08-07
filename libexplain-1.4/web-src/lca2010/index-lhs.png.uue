@@ -1,0 +1,56 @@
+#
+# libexplain - Explain errno values returned by libc functions
+# Copyright (C) 2010 Peter Miller
+# Written by Peter Miller <pmiller@opensource.org.au>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+begin 644 index-lhs.png
+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
+.,30`````245.1*Y"8((`
+`
+end

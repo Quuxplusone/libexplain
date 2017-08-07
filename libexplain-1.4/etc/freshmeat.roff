@@ -1,0 +1,46 @@
+.\"
+.\" libexplain - a library of system-call-specific strerror replacements
+.\" Copyright (C) 2011 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by the Free
+.\" Software Foundation; either version 3 of the License, or (at your option)
+.\" any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but WITHOUT
+.\" ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+.\" FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+.\" more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along with
+.\" this program.  If not, see <http://www.gnu.org/licenses/>.
+.\"
+.hy 0
+.ad l
+.so etc/version.so
+.nf
+Project: libexplain
+Summary: A library of system-call-secific strerror replacements
+.fi
+Description:
+'in +4n
+The libexplain project provides a library that may be used
+to explain Unix and Linux system call errors.  This will make your
+application's error messages much more informative to your users.  The
+library is not quite a drop-in replacement for strerror, but it comes
+close, each system call has a dedicated libexplain function.
+.in -4n
+.nf
+License-List: LGPL
+Release-Focus: Minor feature enhancements
+Project-Tag-List: Software Development,Libraries,Diagnostics,Utilities
+Tar/GZ-URL: http://libexplain.sourceforge.net/libexplain-\*(V).tar.gz
+Website-URL: http://libexplain.sourceforge.net/
+Version: \*(v)
+.\" Tag-List:
+Hide: N
+
+.fi
+.so etc/coverage.so
+.\" vim: set ts=8 sw=4 et :

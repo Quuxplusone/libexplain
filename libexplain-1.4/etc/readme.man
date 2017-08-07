@@ -1,0 +1,158 @@
+'\" t
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008-2011 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.cp 0
+.TH "Read Me" libexplain libexplain "Reference Manual"
+.so etc/version.so
+.hy 0
+.ad l
+.SH NAME
+libexplain \- Explain errno values returned by libc functions
+.XX "" "The README file"
+.SH DESCRIPTION
+The \fIlibexplain\fP package
+provides a library which may be used to explain
+Unix and Linux system call errors.
+This will make your application's error messages much more
+informative to your users.
+.PP
+The library is not quite a drop\[hy]in replacement for
+\f[I]strerror\fP(3), but it
+comes close.
+Each system call has a dedicated libexplain function, for example
+.RS
+.ft CW
+.nf
+fd = open(path, flags, mode);
+if (fd < 0)
+{
+    fprintf(stderr, "%s\en", explain_open(path, flags, mode));
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.RE
+If, for example, you were to try to open
+\f[CW]no\[hy]such\[hy]dir/some\[hy]file\fP, you would see a message like
+.RS
+\f[CW]open(pathname = "no\[hy]such\[hy]dir/some\[hy]file", flags = O_RDONLY)
+failed, No such file or directory (2, ENOENT) because there is no
+"no\[hy]such\[hy]dir" directory in the current directory\fP
+.RE
+.PP
+The good new is that for each of these functions there is a wrapper
+function, in this case \f[I]explain_open_or_die\fP(3), that includes
+the above code fragment.  Adding good error reporting is as simple as
+using a different, but similarly named, function.
+The library also provides thread safe variants of each explanation function.
+.PP
+.so etc/coverage.so
+.SS Tutorial Documentation
+There is a paper available in PDF format
+(http://libexplain.sourceforge.net/\%lca2010/\%lca2010.pdf)
+that describes the library and
+how to use LibExplain.
+The paper can also be accessed as \f[I]explain_lca2010\fP(1),
+which also appears in the reference manual (see below).
+.br
+.ne 1i
+.SH HOME PAGE
+The latest version of
+.I libexplain
+is available on the Web from:
+.TS
+center,tab(;);
+l l s
+l l l.
+URL:;http://libexplain.sourceforge.net/
+File:;index.html;# the libexplain page
+File:;libexplain.\*(v).README;# Description, from the tar file
+File:;libexplain.\*(v).lsm;# Description, LSM format
+File:;libexplain.\*(v).tar.gz;# the complete source
+File:;libexplain.\*(v).pdf;# Reference Manual
+.TE
+.br
+.ne 1i
+.SH BUILDING LIBEXPLAIN
+Full instructions for building
+.I libexplain
+may be found in the
+.I BUILDING
+file included in this distribution.
+.br
+.ne 1i
+.SH COPYRIGHT
+.I libexplain
+version \*(v)
+.br
+Copyright
+.if t \(co
+.if n (C)
+\*(Y) Peter Miller
+.SS Library License
+\f[I]The shared library, and its include files, are GNU LGPL licensed.\fP
+.PP
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 3 of the License, or (at
+your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
+General Public License for more details.
+.PP
+You should have received a copy of the GNU Lesser General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+.SS Non-Library License
+\f[I]Everything else (all source files that do not constitute the shared
+library and its include files) are GNU GPL licensed.\fP
+.PP
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 3 of the License, or (at your
+option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+.br
+.ne 1i
+.SH AUTHOR
+.TS
+tab(;);
+l r l.
+Peter Miller;E\[hy]Mail:;pmiller@opensource.org.au
+\f(CW/\e/\e*\fP;WWW:;http://www.canb.auug.org.au/~millerp/
+.TE
+.br
+.bp
+.SH RELEASE NOTES
+.XX "" "Release Notes"
+This section details the various features and bug fixes of the various
+releases.  For excruciating and complete detail, and also credits for
+those of you who have generously sent me suggestions and bug reports,
+see the \fIetc/CHANGES.*\fP files.
+.PP
+.so etc/coverage.so
+.so etc/new.so

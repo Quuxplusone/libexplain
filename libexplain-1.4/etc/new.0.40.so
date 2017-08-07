@@ -1,0 +1,41 @@
+.\"
+.\" libexplain - a library of system-call-specific strerror replacements
+.\" Copyright (C) 2010, 2011 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by the Free
+.\" Software Foundation; either version 3 of the License, or (at your option)
+.\" any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+.\" or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+.\" for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2m
+.if n *
+.if t \(bu
+.\" Change 23
+There were some C++ keywords in the unclude files, which caused problems
+for C++ users.  They have been replaced.
+.TP 2m
+.if n *
+.if t \(bu
+.\" Change: 15, 16, 19, 20, 21
+Explanations are now availaible for errors reported by the
+\f[I]getpgid\fP(2),
+\f[I]getpgrp\fP(2),
+\f[I]ptrace\fP(2),
+\f[I]setgpid\fP(2) and
+\f[I]setpgrp\fP(2)
+system calls.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.40 (2010\[hy]Oct\[hy]05)
+.\" vim: set ts=8 sw=4 et

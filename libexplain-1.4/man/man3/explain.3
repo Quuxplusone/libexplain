@@ -1,0 +1,1613 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008-2013 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH libexplain 3
+.SH NAME
+libexplain \- Explain errno values returned by libc functions
+.if require_index \{
+.XX "libexplain(3)" "Explain errno values returned by libc functions"
+.\}
+.SH SYNOPSIS
+cc ... \-lexplain;
+.sp
+#include <libexplain/libexplain.h>
+.SH DESCRIPTION
+The libexplain library exists to give explanations of error reported by
+system calls.  The error message returned by \f[I]strerror\fP(3) tend to
+be quite cryptic.  By providing a specific error report for each system
+call, a more detailed error message is possible, usually identifying and
+describing the specific cause from amongst the numerous meanings each
+\f[I]errno\fP value maps to.
+.SS Race Condition
+The explanation of the cause of an error is dependent on the environment
+of the error to remain unchanged, so that when libexplain gets around to
+looking for the cause, the cause is still there.  On a running system,
+and particularly a multi\[hy]user system, this is not always possible.
+.PP
+If an incorrect explanation is provided,
+it is possible that the cause is no longer present.
+.SS Compiling
+Assuming the library header files has been installed into \f[CW]/usr/include\fP,
+and the library files have been installed into \f[CW]/usr/lib\fP,
+compiling against libexplain requires no special \f[CW]\-I\fP options.
+.PP
+When linking your pograms, add \f[CW]\-lexplain\fP to the list of
+libraries at the end of your link line.
+.RS
+.ft CW
+cc \&... \-lexplain
+.ft R
+.RE
+.PP
+When you configure your package with GNU Autoconf,
+you need the large file support macro
+.RS
+AC_SYS_LARGEFILE
+.RE
+.PP
+If you aren't using GNU Autoconf, you will have to work out the needed
+large file support requirements yourdelf.
+.PP
+There is a \f[I]pkg\[hy]config\fP(1) package for you to use, too:
+.RS
+CFLAGS="$CFLAGS `pkg\-config libexplain \-\-cflags`"
+LIBS="$LIBS `pkg\-config libexplain \-\-libs`"
+.RE
+This can make figuring out the command line requirements
+much easier.
+.SS Environment Variable
+The \f[CW]EXPLAIN_OPTIONS\fP environment variable may be used
+to control some of the content in the messages.
+Options are separated by comma (\[lq],\[rq]) characters.
+.PP
+There are three ways to set an option:
+.TP 3m
+1.
+The form \[lq]\f[I]name\fP=\f[I]value\fP\[rq] may be used explicitly.
+The values \[lq]true\[rq] and \[lq]false\[rq] are used for boolean options.
+.TP 3m
+2.
+An option name alone is interpreted to mean \[lq]\f[I]name\fP=true\[rq].
+.TP 3m
+3.
+The form \[lq]no\[hy]\f[I]name\fP\[rq] is interpreted to
+mean \[lq]\f[I]name\fP=false\[rq].
+.PP
+The following options are available:
+.TP 8n
+debug
+Additional debugging messages for libexplain developers.
+Not generally useful to clients of the library.
+.br
+Default: false.
+.TP 8n
+extra\[hy]device\[hy]info
+Additional information for block and character special devices is printed
+when naming a file and its type.
+.br
+Default: true
+.TP 8n
+numeric\[hy]errno
+This option includes the numeric \f[I]errno\fP value
+in the message,
+\f[I]e.g.\fP \[lq](2, ENOENT)\[rq] rather than \[lq](ENOENT)\[rq].
+Disabling this option is generally of use in automated testing, to
+prevent UNIX dialect differences from producing false negatives.
+.br
+Default: true
+.TP 8n
+dialect\[hy]specific
+This controls the presence of explanatory text specific to a particular
+UNIX dialect.
+It also suppresses printing system specific maximums.
+Disabling this option is generally of use in automated testing, to
+prevent UNIX dialect differences from producing false negatives.
+.br
+Default: true.
+.TP 8n
+hanging\[hy]indent
+This controls the hanging indent depth used for error message wrapping.
+By default no hanging indent is used, but this can sometimes obfuscate
+the end of one error message and the beginning of another.  A hanging
+indent results in continuation lines starting with white spoace, similar
+to RFC822 headers.  A value of 0 means no hanging indent (all lines
+flush with left margin).  A common value to use is 4: it doesn't consume
+to much of each line, and it is a clear indent.
+The program may choose to override the environment variable using the
+\f[I]explain_option_hanging_indent_set\fP(3) function.
+The hanging indent is limited to 10% of the terminal width.
+.br
+Default: 0
+.TP 8n
+internal\[hy]strerror
+This option controls the source of
+system eror message texts.
+If false, it uses \f[I]streror\P(3) for the text.
+If true, it uses internal string for the text.
+This is mostly of use for automated testing, to avoid false negatives
+induced by inconsistencies across Unix implementations.
+.br
+Default: false.
+.TP 8n
+program\[hy]name
+This option controls the inclusion of the program name at the
+start of error messages, by
+the explain_*_or_die
+and explain_*_on_error
+functions.
+This helps users understand which command is throwing the error.
+Disabling this option may be of some interest to script writers.
+Program developers can use the \f[I]explain_program_name_set\fP(3)
+function to set the name of the command, if they wish to override
+the name that libexplain would otherwise obtain from the operating system.
+Program developers can use the \f[I]explain_program_name_assemble\fP(3)
+function to trump this option.
+.br
+Default: true.
+.TP 8n
+symbolic\[hy]mode\[hy]bits
+This option controls how permission mode bits are represented in error messages.
+Setting this option to true will cause symbolic names to be printed
+(\f[I]e.g.\fP S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH).
+Setting this option to false will cause octal values to be printed
+(\f[I]e.g.\fP 0644).
+.br
+Default: false.
+.SH Supported System Calls
+Each supported system call has its own \f[I]man\fP page.
+.\" please keep the following list sorted
+.\" ----------  A  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_accept\fP(3)
+Explain \f[I]accept\fP(2) errors
+.TP 8n
+\f[I]explain_accept_or_die\fP(3)
+accept a connection on a socket and report errors
+.TP 8n
+\f[I]explain_accept4\fP(3)
+Explain \f[I]accept4\fP(2) errors
+.TP 8n
+\f[I]explain_accept4_or_die\fP(3)
+accept a connection on a socket and report errors
+.TP 8n
+\f[I]explain_access\fP(3)
+Explain \f[I]access\fP(2) errors
+.TP 8n
+\f[I]explain_access_or_die\fP(3)
+check permissions for a file and report errors
+.TP 8n
+\f[I]explain_acct\fP(3)
+Explain \f[I]acct\fP(2) errors
+.TP 8n
+\f[I]explain_acct_or_die\fP(3)
+process accounting control and report errors
+.TP 8n
+\f[I]explain_acl_from_text\fP(3)
+Explain \f[I]acl_from_text\fP(3) errors
+.TP 8n
+\f[I]explain_acl_from_text_or_die\fP(3)
+create an ACL from text and report errors
+.TP 8n
+\f[I]explain_acl_get_fd\fP(3)
+Explain \f[I]acl_get_fd\fP(3) errors
+.TP 8n
+\f[I]explain_acl_get_fd_or_die\fP(3)
+Execute \f[I]acl_get_fd\fP(3) and report errors
+.TP 8n
+\f[I]explain_acl_get_file\fP(3)
+Explain \f[I]acl_get_file\fP(3) errors
+.TP 8n
+\f[I]explain_acl_get_file_or_die\fP(3)
+Execute \f[I]acl_get_file\fP(3) and report errors
+.TP 8n
+\f[I]explain_acl_set_fd\fP(3)
+Explain \f[I]acl_set_fd\fP(3) errors
+.TP 8n
+\f[I]explain_acl_set_fd_or_die\fP(3)
+set an ACL by file descriptor and report errors
+.TP 8n
+\f[I]explain_acl_set_file\fP(3)
+Explain \f[I]acl_set_file\fP(3) errors
+.TP 8n
+\f[I]explain_acl_set_file_or_die\fP(3)
+set an ACL by filename and report errors
+.TP 8n
+\f[I]explain_acl_to_text\fP(3)
+Explain \f[I]acl_to_text\fP(3) errors
+.TP 8n
+\f[I]explain_acl_to_text_or_die\fP(3)
+convert an ACL to text and report errors
+.TP 8n
+\f[I]explain_adjtime\fP(3)
+Explain \f[I]adjtime\fP(2) errors
+.TP 8n
+\f[I]explain_adjtime_or_die\fP(3)
+smoothly tune kernel clock and report errors
+.TP 8n
+\f[I]explain_adjtimex\fP(3)
+Explain \f[I]adjtimex\fP(2) errors
+.TP 8n
+\f[I]explain_adjtimex_or_die\fP(3)
+tune kernel clock and report errors
+.TP 8n
+\f[I]explain_asprintf\fP(3)
+Explain \f[I]asprintf\fP(3) errors
+.TP 8n
+\f[I]explain_asprintf_or_die\fP(3)
+print to allocated string and report errors
+.\" ----------  B  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_bind\fP(3)
+Explain \f[I]bind\fP(2) errors
+.TP 8n
+\f[I]explain_bind_or_die\fP(3)
+bind a name to a socket and report errors
+.\" ----------  C  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_calloc\fP(3)
+Explain \f[I]calloc\fP(3) errors
+.TP 8n
+\f[I]explain_calloc_or_die\fP(3)
+Allocate and clear memory and report errors
+.TP 8n
+\f[I]explain_chdir\fP(3)
+Explain \f[I]chdir\fP(2) errors
+.TP 8n
+\f[I]explain_chdir_or_die\fP(3)
+change working directory and report errors
+.TP 8n
+\f[I]explain_chmod\fP(3)
+Explain \f[I]chmod\fP(2) errors
+.TP 8n
+\f[I]explain_chmod_or_die\fP(3)
+change permissions of a file and report errors
+.TP 8n
+\f[I]explain_chown\fP(3)
+Explain \f[I]chown\fP errors
+.TP 8n
+\f[I]explain_chown_or_die\fP(3)
+change ownership of a file and report errors
+.TP 8n
+\f[I]explain_chroot\fP(3)
+Explain \f[I]chroot\fP(2) errors
+.TP 8n
+\f[I]explain_chroot_or_die\fP(3)
+change root directory and report errors
+.TP 8n
+\f[I]explain_close\fP(3)
+Explain \f[I]close\fP(2) errors
+.TP 8n
+\f[I]explain_close_or_die\fP(3)
+close a file descriptor and report errors
+.TP 8n
+\f[I]explain_closedir\fP(3)
+Explain \f[I]closedir\fP(3) errors
+.TP 8n
+\f[I]explain_closedir_or_die\fP(3)
+close a directory and report errors
+.TP 8n
+\f[I]explain_connect\fP(3)
+Explain \f[I]connect\fP(2) errors
+.TP 8n
+\f[I]explain_connect_or_die\fP(3)
+initiate a connection on a socket and report errors
+.TP 8n
+\f[I]explain_creat\fP(3)
+Explain \f[I]creat\fP(2) errors
+.TP 8n
+\f[I]explain_creat_or_die\fP(3)
+create and open a file and report errors
+.\" ----------  D  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_dirfd\fP(3)
+Explain \f[I]dirfd\fP(3) errors
+.TP 8n
+\f[I]explain_dirfd_or_die\fP(3)
+get directory stream file descriptor and report errors
+.TP 8n
+\f[I]explain_dup\fP(3)
+Explain \f[I]dup\fP(2) errors
+.TP 8n
+\f[I]explain_dup_or_die\fP(3)
+duplicate a file descriptor and report errors
+.TP 8n
+\f[I]explain_dup2\fP(3)
+Explain \f[I]dup2\fP(2) errors
+.TP 8n
+\f[I]explain_dup2_or_die\fP(3)
+duplicate a file descriptor and report errors
+.\" ----------  E  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_endgrent\fP(3)
+Explain \f[I]endgrent\fP(3) errors
+.TP 8n
+\f[I]explain_endgrent_or_die\fP(3)
+finish group file accesses and report errors
+.TP 8n
+\f[I]explain_eventfd\fP(3)
+Explain \f[I]eventfd\fP(2) errors
+.TP 8n
+\f[I]explain_eventfd_or_die\fP(3)
+create a file descriptor for event notification and report errors
+.TP 8n
+\f[I]explain_execlp\fP(3)
+Explain \f[I]execlp\fP(3) errors
+.TP 8n
+\f[I]explain_execlp_or_die\fP(3)
+execute a file and report errors
+.TP 8n
+\f[I]explain_execv\fP(3)
+Explain \f[I]execv\fP(3) errors
+.TP 8n
+\f[I]explain_execv_or_die\fP(3)
+execute a file and report errors
+.TP 8n
+\f[I]explain_execve\fP(3)
+Explain \f[I]execve\fP(2) errors
+.TP 8n
+\f[I]explain_execve_or_die\fP(3)
+execute program and report errors
+.TP 8n
+\f[I]explain_execvp\fP(3)
+Explain \f[I]execvp\fP(3) errors
+.TP 8n
+\f[I]explain_execvp_or_die\fP(3)
+execute program and report errors
+.\" ----------  F  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_exit\fP(3)
+print an explanation of exit status before exiting
+.TP 8n
+\f[I]explain_fchdir\fP(3)
+Explain \f[I]fchdir\fP(2) errors
+.TP 8n
+\f[I]explain_fchmod\fP(3)
+Explain \f[I]fchmod\fP(2) errors
+.TP 8n
+\f[I]explain_fchmod_or_die\fP(3)
+change permissions of an open file and report errors
+.TP 8n
+\f[I]explain_fchown\fP(3)
+Explain \f[I]fchown\fP(2) errors
+.TP 8n
+\f[I]explain_fchown_or_die\fP(3)
+change ownership of a file and report errors
+.TP 8n
+\f[I]explain_fchownat\fP(3)
+Explain \f[I]fchownat\fP(2) errors
+.TP 8n
+\f[I]explain_fchownat_or_die\fP(3)
+change ownership of a file relative to a directory and report errors
+.TP 8n
+\f[I]explain_fclose\fP(3)
+Explain \f[I]fclose\fP(2) errors
+.TP 8n
+\f[I]explain_fclose_or_die\fP(3)
+close a stream and report errors
+.TP 8n
+\f[I]explain_fcntl\fP(3)
+Explain \f[I]fcntl\fP(2) errors
+.TP 8n
+\f[I]explain_fcntl_or_die\fP(3)
+Manipulate a file descriptor and report errors
+.TP 8n
+\f[I]explain_fdopen\fP(3)
+Explain \f[I]fdopen\fP(3) errors
+.TP 8n
+\f[I]explain_fdopen_or_die\fP(3)
+stream open function and report errors
+.TP 8n
+\f[I]explain_fdopendir\fP(3)
+Explain \f[I]fdopendir\fP(3) errors
+.TP 8n
+\f[I]explain_fdopendir_or_die\fP(3)
+open a directory and report errors
+.TP 8n
+\f[I]explain_feof\fP(3)
+Explain \f[I]feof\fP(3) errors
+.TP 8n
+\f[I]explain_feof_or_die\fP(3)
+check and reset stream status and report errors
+.TP 8n
+\f[I]explain_ferror\fP(3)
+Explain \f[I]ferror\fP(3) errors
+.TP 8n
+\f[I]explain_ferror_or_die\fP(3)
+check stream status and report errors
+.TP 8n
+\f[I]explain_fflush\fP(3)
+Explain \f[I]fflush\fP(3) errors
+.TP 8n
+\f[I]explain_fflush_or_die\fP(3)
+flush a stream and report errors
+.TP 8n
+\f[I]explain_fgetc\fP(3)
+Explain \f[I]fgetc\fP(3) errors
+.TP 8n
+\f[I]explain_fgetc_or_die\fP(3)
+input of characters and report errors
+.TP 8n
+\f[I]explain_fgetpos\fP(3)
+Explain \f[I]fgetpos\fP(3) errors
+.TP 8n
+\f[I]explain_fgetpos_or_die\fP(3)
+reposition a stream and report errors
+.TP 8n
+\f[I]explain_fgets\fP(3)
+Explain \f[I]fgets\fP(3) errors
+.TP 8n
+\f[I]explain_fgets_or_die\fP(3)
+input of strings and report errors
+.TP 8n
+\f[I]explain_fileno\fP(3)
+Explain \f[I]fileno\fP(3) errors
+.TP 8n
+\f[I]explain_fileno_or_die\fP(3)
+check and reset stream status and report errors
+.TP 8n
+\f[I]explain_flock\fP(3)
+Explain \f[I]flock\fP(2) errors
+.TP 8n
+\f[I]explain_flock_or_die\fP(3)
+apply or remove an advisory lock on an open file and report errors
+.TP 8n
+\f[I]explain_fopen\fP(3)
+Explain \f[I]fopen\fP(3) errors
+.TP 8n
+\f[I]explain_fopen_or_die\fP(2)
+open files and report errors
+.TP 8n
+\f[I]explain_fork\fP(3)
+Explain \f[I]fork\fP(2) errors
+.TP 8n
+\f[I]explain_fork_or_die\fP(3)
+create a child process and report errors
+.TP 8n
+\f[I]explain_fpathconf\fP(3)
+Explain \f[I]fpathconf\fP(3) errors
+.TP 8n
+\f[I]explain_fpathconf_or_die\fP(3)
+get configuration values for files and report errors
+.TP 8n
+\f[I]explain_fprintf\fP(3)
+Explain \f[I]fprintf\fP(3) errors
+.TP 8n
+\f[I]explain_fprintf_or_die\fP(3)
+formatted output conversion and report errors
+.TP 8n
+\f[I]explain_fpurge\fP(3)
+Explain \f[I]fpurge\fP(3) errors
+.TP 8n
+\f[I]explain_fpurge_or_die\fP(3)
+purge a stream and report errors
+.TP 8n
+\f[I]explain_fputc\fP(3)
+Explain \f[I]fputc\fP(3) errors
+.TP 8n
+\f[I]explain_fputc_or_die\fP(3)
+output of characters and report errors
+.TP 8n
+\f[I]explain_fputs\fP(3)
+Explain \f[I]fputs\fP(3) errors
+.TP 8n
+\f[I]explain_fputs_or_die\fP(3)
+write a string to a stream and report errors
+.TP 8n
+\f[I]explain_fread\fP(3)
+Explain \f[I]fread\fP(3) errors
+.TP 8n
+\f[I]explain_fread_or_die\fP(3)
+binary stream input and report errors
+.TP 8n
+\f[I]explain_freopen\fP(3)
+Explain \f[I]freopen\fP(3) errors
+.TP 8n
+\f[I]explain_freopen_or_die\fP(3)
+open files and report errors
+.TP 8n
+\f[I]explain_fseek\fP(3)
+Explain \f[I]fseek\fP(3) errors
+.TP 8n
+\f[I]explain_fseek_or_die\fP(3)
+reposition a stream and report errors
+.TP 8n
+\f[I]explain_fseeko\fP(3)
+Explain \f[I]fseeko\fP(3) errors
+.TP 8n
+\f[I]explain_fseeko_or_die\fP(3)
+seek to or report file position and report errors
+.TP 8n
+\f[I]explain_fsetpos\fP(3)
+Explain \f[I]fsetpos\fP(3) errors
+.TP 8n
+\f[I]explain_fsetpos_or_die\fP(3)
+reposition a stream and report errors
+.TP 8n
+\f[I]explain_fstat\fP(3)
+Explain \f[I]fstat\fP(3) errors
+.TP 8n
+\f[I]explain_fstat_or_die\fP(3)
+get file status and report errors
+.TP 8n
+\f[I]explain_fstatat\fP(3)
+Explain \f[I]fstatat\fP(2) errors
+.TP 8n
+\f[I]explain_fstatat_or_die\fP(3)
+get file status relative to a directory file descriptor and report errors
+.TP 8n
+\f[I]explain_fstatfs\fP(3)
+Explain \f[I]fstatfs\fP(2) errors
+.TP 8n
+\f[I]explain_fstatfs_or_die\fP(3)
+get file system statistics and report errors
+.TP 8n
+\f[I]explain_fstatvfs\fP(3)
+Explain \f[I]fstatvfs\fP(2) errors
+.TP 8n
+\f[I]explain_fstatvfs_or_die\fP(3)
+get file system statistics and report errors
+.TP 8n
+\f[I]explain_fsync\fP(3)
+Explain \f[I]fsync\fP(2) errors
+.TP 8n
+\f[I]explain_fsync_or_die\fP(3)
+synchronize a file's in\[hy]core state with storage device and report errors
+.TP 8n
+\f[I]explain_ftell\fP(3)
+Explain \f[I]ftell\fP(3) errors
+.TP 8n
+\f[I]explain_ftell_or_die\fP(3)
+get stream position and report errors
+.TP 8n
+\f[I]explain_ftello\fP(3)
+Explain \f[I]ftello\fP(3) errors
+.TP 8n
+\f[I]explain_ftello_or_die\fP(3)
+get stream position and report errors
+.TP 8n
+\f[I]explain_ftime\fP(3)
+Explain \f[I]ftime\fP(3) errors
+.TP 8n
+\f[I]explain_ftime_or_die\fP(3)
+return date and time and report errors
+.TP 8n
+\f[I]explain_ftruncate\fP(3)
+Explain \f[I]ftruncate\fP(2) errors
+.TP 8n
+\f[I]explain_ftruncate_or_die\fP(3)
+truncate a file to a specified length and report errors
+.TP 8n
+\f[I]explain_futimens\fP(3)
+Explain \f[I]futimens\fP(3) errors
+.TP 8n
+\f[I]explain_futimens_or_die\fP(3)
+change file timestamps with nanosecond precision and report errors
+.TP 8n
+\f[I]explain_futimes\fP(3)
+Explain \f[I]futimes\fP(3) errors
+.TP 8n
+\f[I]explain_futimes_or_die\fP(3)
+Execute \f[I]futimes\fP(3) and report errors
+.TP 8n
+\f[I]explain_futimesat\fP(3)
+Explain \f[I]futimesat\fP(2) errors
+.TP 8n
+\f[I]explain_futimesat_or_die\fP(3)
+change timestamps of a file relative to a directory  and report errors
+.TP 8n
+\f[I]explain_fwrite\fP(3)
+Explain \f[I]fwrite\fP(3) errors
+.TP 8n
+\f[I]explain_fwrite_or_die\fP(3)
+binary stream output and report errors
+.TP 8n
+\f[I]explain_futimesat\fP(3)
+Explain \f[I]futimesat\fP(2) errors
+.TP 8n
+\f[I]explain_futimesat_or_die\fP(3)
+change timestamps of a file relative to a directory  and report errors
+.\" ----------  G  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_getaddrinfo\fP(3)
+Explain \f[I]getaddrinfo\fP(3) errors
+.TP 8n
+\f[I]explain_getaddrinfo_or_die\fP(3)
+network address and and report errors
+.TP 8n
+\f[I]explain_getc\fP(3)
+Explain \f[I]getc\fP(3) errors
+.TP 8n
+\f[I]explain_getc_or_die\fP(3)
+input of characters and report errors
+.TP 8n
+\f[I]explain_getchar\fP(3)
+Explain \f[I]getchar\fP(3) errors
+.TP 8n
+\f[I]explain_getchar_or_die\fP(3)
+input of characters and report errors
+.TP 8n
+\f[I]explain_getcwd\fP(3)
+Explain \f[I]getcwd\fP(2) errors
+.TP 8n
+\f[I]explain_getdomainname\fP(3)
+Explain \f[I]getdomainname\fP(2) errors
+.TP 8n
+\f[I]explain_getdomainname_or_die\fP(3)
+get domain name and report errors
+.TP 8n
+\f[I]explain_getgrent\fP(3)
+Explain \f[I]getgrent\fP(3) errors
+.TP 8n
+\f[I]explain_getgrent_or_die\fP(3)
+get group file entry and report errors
+.TP 8n
+\f[I]explain_getgrouplist\fP(3)
+Explain \f[I]getgrouplist\fP(3) errors
+.TP 8n
+\f[I]explain_getgrouplist_or_die\fP(3)
+get list of groups to which a user belongs and report errors
+.TP 8n
+\f[I]explain_getgroups\fP(3)
+Explain \f[I]getgroups\fP(2) errors
+.TP 8n
+\f[I]explain_getgroups_or_die\fP(3)
+get list of supplementary group IDs and report errors
+.TP 8n
+\f[I]explain_getcwd_or_die\fP(3)
+Get current working directory and report errors
+.TP 8n
+\f[I]explain_gethostbyname\fP(3)
+Explain \f[I]gethostbyname\fP(3) errors
+.TP 8n
+\f[I]explain_gethostbyname_or_die\fP(3)
+get host address given host name and report errors
+.TP 8n
+\f[I]explain_gethostid\fP(3)
+Explain \f[I]gethostid\fP(3) errors
+.TP 8n
+\f[I]explain_gethostid_or_die\fP(3)
+get the unique identifier of the current host and report errors
+.TP 8n
+\f[I]explain_gethostname\fP(3)
+Explain \f[I]gethostname\fP(2) errors
+.TP 8n
+\f[I]explain_gethostname_or_die\fP(3)
+get hostname and report errors
+.TP 8n
+\f[I]explain_getpeername\fP(3)
+Explain \f[I]getpeername\fP(2) errors
+.TP 8n
+\f[I]explain_getpeername_or_die\fP(3)
+Execute\f[I]getpeername\fP(2) and report errors
+.TP 8n
+\f[I]explain_getpgid\fP(3)
+Explain \f[I]getpgid\fP(2) errors
+.TP 8n
+\f[I]explain_getpgid_or_die\fP(3)
+get process group and report errors
+.TP 8n
+\f[I]explain_getpgrp\fP(3)
+Explain \f[I]getpgrp\fP(2) errors
+.TP 8n
+\f[I]explain_getpgrp_or_die\fP(3)
+get process group and report errors
+.TP 8n
+\f[I]explain_getpriority\fP(3)
+Explain \f[I]getpriority\fP(2) errors
+.TP 8n
+\f[I]explain_getpriority_or_die\fP(3)
+get program scheduling priority and report errors
+.TP 8n
+\f[I]explain_getresgid\fP(3)
+Explain \f[I]getresgid\fP(2) errors
+.TP 8n
+\f[I]explain_getresgid_or_die\fP(3)
+get real, effective and saved group IDs and report errors
+.TP 8n
+\f[I]explain_getresuid\fP(3)
+Explain \f[I]getresuid\fP(2) errors
+.TP 8n
+\f[I]explain_getresuid_or_die\fP(3)
+get real, effective and saved user IDs and report errors
+.TP 8n
+\f[I]explain_getrlimit\fP(3)
+Explain \f[I]getrlimit\fP(2) errors
+.TP 8n
+\f[I]explain_getrlimit_or_die\fP(3)
+get resource limits and report errors
+.TP 8n
+\f[I]explain_getrusage\fP(3)
+Explain \f[I]getrusage\fP(2) errors
+.TP 8n
+\f[I]explain_getrusage_or_die\fP(3)
+get resource usage and report errors
+.TP 8n
+\f[I]explain_getsockname\fP(3)
+Explain \f[I]getsockname\fP(2) errors
+.TP 8n
+\f[I]explain_getsockname_or_die\fP(3)
+Execute \f[I]getsockname\fP(2) and report errors
+.TP 8n
+\f[I]explain_getsockopt\fP(3)
+Explain \f[I]getsockopt\fP(2) errors
+.TP 8n
+\f[I]explain_getsockopt_or_die\fP(3)
+Execute \f[I]getsockopt\fP(2) and report errors
+.TP 8n
+\f[I]explain_gettimeofday\fP(3)
+Explain \f[I]gettimeofday\fP(2) errors
+.TP 8n
+\f[I]explain_gettimeofday_or_die\fP(3)
+get time and report errors
+.TP 8n
+\f[I]explain_getw\fP(3)
+Explain \f[I]getw\fP(3) errors
+.TP 8n
+\f[I]explain_getw_or_die\fP(3)
+input a word (int) and report errors
+.\" ----------  H  ---------------------------------------------------------
+.\" ----------  I  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_iconv\fP(3)
+Explain \f[I]iconv\fP(3) errors
+.TP 8n
+\f[I]explain_iconv_or_die\fP(3)
+perform character set conversion and report errors
+.TP 8n
+\f[I]explain_iconv_close\fP(3)
+Explain \f[I]iconv_close\fP(3) errors
+.TP 8n
+\f[I]explain_iconv_close_or_die\fP(3)
+deallocate descriptor for character set conversion and report errors
+.TP 8n
+\f[I]explain_iconv_open\fP(3)
+Explain \f[I]iconv_open\fP(3) errors
+.TP 8n
+\f[I]explain_iconv_open_or_die\fP(3)
+allocate descriptor for character set conversion and report errors
+.TP 8n
+\f[I]explain_ioctl\fP(3)
+Explain \f[I]ioctl\fP(2) errors
+.TP 8n
+\f[I]explain_ioctl_or_die\fP(3)
+Execute \f[I]ioctl\fP(2) and report errors
+.\" ----------  J  ---------------------------------------------------------
+.\" ----------  K  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_kill\fP(3)
+Explain \f[I]kill\fP(2) errors
+.TP 8n
+\f[I]explain_kill_or_die\fP(3)
+send signal to a process and report errors
+.\" ----------  L  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_lchmod\fP(3)
+Explain \f[I]lchmod\fP(2) errors
+.TP 8n
+\f[I]explain_lchmod_or_die\fP(3)
+change permissions of a file and report errors
+.TP 8n
+\f[I]explain_lchown\fP(3)
+Explain \f[I]lchown\fP(2) errors
+.TP 8n
+\f[I]explain_lchown_or_die\fP(3)
+change ownership of a file and report errors
+.TP 8n
+\f[I]explain_lchownat\fP(3)
+Explain \f[I]lchownat\fP(2) errors
+.TP 8n
+\f[I]explain_lchownat_or_die\fP(3)
+Execute \f[I]lchownat\fP(2) and report errors
+.TP 8n
+\f[I]explain_link\fP(3)
+Explain \f[I]link\fP(2) errors
+.TP 8n
+\f[I]explain_link_or_die\fP(3)
+make a new name for a file and report errors
+.TP 8n
+\f[I]explain_linkat\fP(3)
+Explain \f[I]linkat\fP(2) errors
+.TP 8n
+\f[I]explain_linkat_or_die\fP(3)
+create a file link relative to directory file descriptors and report errors
+.TP 8n
+\f[I]explain_listen\fP(3)
+Explain \f[I]listen\fP(2) errors
+.TP 8n
+\f[I]explain_listen_or_die\fP(3)
+listen for connections on a socket and report errors
+.TP 8n
+\f[I]explain_lseek\fP(3)
+Explain \f[I]lseek\fP(2) errors
+.TP 8n
+\f[I]explain_lseek_or_die\fP(3)
+reposition file offset and report errors
+.TP 8n
+\f[I]explain_lstat\fP(3)
+Explain \f[I]lstat\fP(2) errors
+.TP 8n
+\f[I]explain_lstat_or_die\fP(3)
+get file status and report errors
+.TP 8n
+\f[I]explain_lutimes\fP(3)
+Explain \f[I]lutimes\fP(3) errors
+.TP 8n
+\f[I]explain_lutimes_or_die\fP(3)
+modify file timestamps and report errors
+.\" ----------  M  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_malloc\fP(3)
+Explain \f[I]malloc\fP(3) errors
+.TP 8n
+\f[I]explain_malloc_or_die\fP(3)
+Execute \f[I]malloc\fP(3) and report errors
+.TP 8n
+\f[I]explain_mkdir\fP(3)
+Explain \f[I]mkdir\fP(2) errors
+.TP 8n
+\f[I]explain_mkdir_or_die\fP(3)
+create directory and report errors
+.TP 8n
+\f[I]explain_mkdtemp\fP(3)
+Explain \f[I]mkdtemp\fP(3) errors
+.TP 8n
+\f[I]explain_mkdtemp_or_die\fP(3)
+create a unique temporary directory and report errors
+.TP 8n
+\f[I]explain_mknod\fP(3)
+Explain \f[I]mknod\fP(2) errors
+.TP 8n
+\f[I]explain_mknod_or_die\fP(3)
+create a special or ordinary file and report errors
+.TP 8n
+\f[I]explain_mkostemp\fP(3)
+Explain \f[I]mkostemp\fP(3) errors
+.TP 8n
+\f[I]explain_mkostemp_or_die\fP(3)
+create a unique temporary file and report errors
+.TP 8n
+\f[I]explain_mkstemp\fP(3)
+Explain \f[I]mkstemp\fP(3) errors
+.TP 8n
+\f[I]explain_mkstemp_or_die\fP(3)
+create a unique temporary file and report errors
+.TP 8n
+\f[I]explain_mktemp\fP(3)
+Explain \f[I]mktemp\fP(3) errors
+.TP 8n
+\f[I]explain_mktemp_or_die\fP(3)
+make a unique temporary filename and report errors
+.TP 8n
+\f[I]explain_mmap\fP(3)
+Explain \f[I]mmap\fP(2) errors
+.TP 8n
+\f[I]explain_mmap_or_die\fP(3)
+map file or device into memory and report errors
+.TP 8n
+\f[I]explain_mount\fP(3)
+Explain \f[I]mount\fP(2) errors
+.TP 8n
+\f[I]explain_mount_or_die\fP(3)
+mount file system and report errors
+.TP 8n
+\f[I]explain_munmap\fP(3)
+Explain \f[I]munmap\fP(2) errors
+.TP 8n
+\f[I]explain_munmap_or_die\fP(3)
+unmap a file or device from memory and report errors
+.\" ----------  N  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_nanosleep\fP(3)
+Explain \f[I]nanosleep\fP(2) errors
+.TP 8n
+\f[I]explain_nanosleep_or_die\fP(3)
+    high\[hy]resolution sleep and report errors
+.TP 8n
+\f[I]explain_nice\fP(3)
+Explain \f[I]nice\fP(2) errors
+.TP 8n
+\f[I]explain_nice_or_die\fP(3)
+change process priority and report errors
+.\" ----------  O  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_open\fP(3)
+Explain \f[I]open\fP(2) errors
+.TP 8n
+\f[I]explain_open_or_die\fP(3)
+open files and report errors
+.TP 8n
+\f[I]explain_openat\fP(3)
+Explain \f[I]openat\fP(2) errors
+.TP 8n
+\f[I]explain_openat_or_die\fP(3)
+open a file relative to a directory file descriptor and report errors
+.TP 8n
+\f[I]explain_opendir\fP(3)
+Explain \f[I]opendir\fP(3) errors
+.TP 8n
+\f[I]explain_opendir_or_die\fP(3)
+open a directory and report errors
+.\" ----------  P  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_pathconf\fP(3)
+Explain \f[I]pathconf\fP(3) errors
+.TP 8n
+\f[I]explain_pathconf_or_die\fP(3)
+get configuration values for files and report errors
+.TP 8n
+\f[I]explain_pclose\fP(3)
+Explain \f[I]pclose\fP(3) errors
+.TP 8n
+\f[I]explain_pclose_or_die\fP(3)
+Execute \f[I]pclose\fP(3) and report errors
+.TP 8n
+\f[I]explain_pipe\fP(3)
+Explain \f[I]pipe\fP(2) errors
+.TP 8n
+\f[I]explain_pipe_or_die\fP(3)
+Execute \f[I]pipe\fP(2) and report errors
+.TP 8n
+\f[I]explain_pipe2\fP(3)
+Explain \f[I]pipe2\fP(2) errors
+.TP 8n
+\f[I]explain_pipe2_or_die\fP(3)
+create pipe and report errors
+.TP 8n
+\f[I]explain_poll\fP(3)
+Explain \f[I]poll\fP(2) errors
+.TP 8n
+\f[I]explain_poll_or_die\fP(3)
+wait for some event on a file descriptor and report errors
+.TP 8n
+\f[I]explain_popen\fP(3)
+Explain \f[I]popen\fP(3) errors
+.TP 8n
+\f[I]explain_popen_or_die\fP(3)
+Execute \f[I]popen\fP(3) and report errors
+.TP 8n
+\f[I]explain_pread\fP(3)
+Explain \f[I]pread\fP(2) errors
+.TP 8n
+\f[I]explain_pread_or_die\fP(3)
+read from a file descriptor at a given offset and report errors
+.TP 8n
+\f[I]explain_printf\fP(3)
+Explain \f[I]printf\fP(3) errors
+.TP 8n
+\f[I]explain_printf_or_die\fP(3)
+formatted output conversion and report errors
+.TP 8n
+\f[I]explain_ptrace\fP(3)
+Explain \f[I]ptrace\fP(2) errors
+.TP 8n
+\f[I]explain_ptrace_or_die\fP(3)
+process trace and report errors
+.TP 8n
+\f[I]explain_putc\fP(3)
+Explain \f[I]putc\fP(3) errors
+.TP 8n
+\f[I]explain_putc_or_die\fP(3)
+output of characters and report errors
+.TP 8n
+\f[I]explain_putchar\fP(3)
+Explain \f[I]putchar\fP(3) errors
+.TP 8n
+\f[I]explain_putchar_or_die\fP(3)
+output of characters and report errors
+.TP 8n
+\f[I]explain_putenv\fP(3)
+Explain \f[I]putenv\fP(3) errors
+.TP 8n
+\f[I]explain_putenv_or_die\fP(3)
+change or add an environment variable and report errors
+.TP 8n
+\f[I]explain_puts\fP(3)
+Explain \f[I]puts\fP(3) errors
+.TP 8n
+\f[I]explain_puts_or_die\fP(3)
+write a string and a trailing newline to stdout and report errors
+.TP 8n
+\f[I]explain_putw\fP(3)
+Explain \f[I]putw\fP(3) errors
+.TP 8n
+\f[I]explain_putw_or_die\fP(3)
+output a word (int) and report errors
+.TP 8n
+\f[I]explain_pwrite\fP(3)
+Explain \f[I]pwrite\fP(2) errors
+.TP 8n
+\f[I]explain_pwrite_or_die\fP(3)
+write to a file descriptor at a given offset and report errors
+.\" ----------  Q  ---------------------------------------------------------
+.\" ----------  R  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_raise\fP(3)
+Explain \f[I]raise\fP(3) errors
+.TP 8n
+\f[I]explain_raise_or_die\fP(3)
+send a signal to the caller and report errors
+.TP 8n
+\f[I]explain_read\fP(3)
+Explain \f[I]read\fP(2) errors
+.TP 8n
+\f[I]explain_read_or_die\fP(3)
+read from a file descriptor and report errors
+.TP 8n
+\f[I]explain_readdir\fP(3)
+Explain \f[I]readdir\fP(3) errors
+.TP 8n
+\f[I]explain_readdir_or_die\fP(3)
+read a directory and report errors
+.TP 8n
+\f[I]explain_readlink\fP(3)
+Explain \f[I]readlink\fP(2) errors
+.TP 8n
+\f[I]explain_readlink_or_die\fP(3)
+read value of a symbolic link and report errors
+.TP 8n
+\f[I]explain_readv\fP(3)
+Explain \f[I]readv\fP(2) errors
+.TP 8n
+\f[I]explain_readv_or_die\fP(3)
+read data into multiple buffers and report errors
+.TP 8n
+\f[I]explain_realloc\fP(3)
+Explain \f[I]realloc\fP(3) errors
+.TP 8n
+\f[I]explain_realloc_or_die\fP(3)
+Execute \f[I]realloc\fP(3) and report errors
+.TP 8n
+\f[I]explain_realpath\fP(3)
+Explain \f[I]realpath\fP(3) errors
+.TP 8n
+\f[I]explain_realpath_or_die\fP(3)
+return the canonicalized absolute pathname and report errors
+.TP 8n
+\f[I]explain_rename\fP(3)
+Explain \f[I]rename\fP(2) errors
+.TP 8n
+\f[I]explain_rename_or_die\fP(3)
+change the name or location of a file and report errors
+.TP 8n
+\f[I]explain_rmdir\fP(3)
+Explain \f[I]rmdir\fP(2) errors
+.TP 8n
+\f[I]explain_rmdir_or_die\fP(3)
+delete a directory and report errors
+.\" ----------  S  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_select\fP(3)
+Explain \f[I]select\fP(2) errors
+.TP 8n
+\f[I]explain_select_or_die\fP(3)
+execute \f[I]select\fP(2) and report errors
+.TP 8n
+\f[I]explain_setbuf\fP(3)
+Explain \f[I]setbuf\fP(3) errors
+.TP 8n
+\f[I]explain_setbuffer\fP(3)
+Explain \f[I]setbuffer\fP(3) errors
+.TP 8n
+\f[I]explain_setbuffer_or_die\fP(3)
+stream buffering operations and report errors
+.TP 8n
+\f[I]explain_setbuf_or_die\fP(3)
+set stream buffer and report errors
+.TP 8n
+\f[I]explain_setdomainname\fP(3)
+Explain \f[I]setdomainname\fP(2) errors
+.TP 8n
+\f[I]explain_setdomainname_or_die\fP(3)
+set domain name and report errors
+.TP 8n
+\f[I]explain_setenv\fP(3)
+Explain \f[I]setenv\fP(3) errors
+.TP 8n
+\f[I]explain_setenv_or_die\fP(3)
+change or add an environment variable and report errors
+.TP 8n
+\f[I]explain_setgid\fP(3)
+Explain \f[I]setgid\fP(2) errors
+.TP 8n
+\f[I]explain_setgid_or_die\fP(3)
+set group identity and report errors
+.TP 8n
+\f[I]explain_setgrent\fP(3)
+Explain \f[I]setgrent\fP(3) errors
+.TP 8n
+\f[I]explain_setgrent_or_die\fP(3)
+rewind to the start of the group database and report errors
+.TP 8n
+\f[I]explain_setgroups\fP(3)
+Explain \f[I]setgroups\fP(2) errors
+.TP 8n
+\f[I]explain_setgroups_or_die\fP(3)
+get list of supplementary group IDs and report errors
+.TP 8n
+\f[I]explain_sethostname\fP(3)
+Explain \f[I]sethostname\fP(2) errors
+.TP 8n
+\f[I]explain_sethostname_or_die\fP(3)
+set hostname and report errors
+.TP 8n
+\f[I]explain_setlinebuf\fP(3)
+Explain \f[I]setlinebuf\fP(3) errors
+.TP 8n
+\f[I]explain_setlinebuf_or_die\fP(3)
+stream buffering operations and report errors
+.TP 8n
+\f[I]explain_setpgid\fP(3)
+Explain \f[I]setpgid\fP(2) errors
+.TP 8n
+\f[I]explain_setpgid_or_die\fP(3)
+set process group and report errors
+.TP 8n
+\f[I]explain_setpgrp\fP(3)
+Explain \f[I]setpgrp\fP(2) errors
+.TP 8n
+\f[I]explain_setpgrp_or_die\fP(3)
+set process group and report errors
+.TP 8n
+\f[I]explain_setpriority\fP(3)
+Explain \f[I]setpriority\fP(2) errors
+.TP 8n
+\f[I]explain_setpriority_or_die\fP(3)
+set program scheduling priority and report errors
+.TP 8n
+\f[I]explain_setregid\fP(3)
+Explain \f[I]setregid\fP(2) errors
+.TP 8n
+\f[I]explain_setregid_or_die\fP(3)
+set real and/or effective group ID and report errors
+.TP 8n
+\f[I]explain_setreuid\fP(3)
+Explain \f[I]setreuid\fP(2) errors
+.TP 8n
+\f[I]explain_setreuid_or_die\fP(3)
+set the real and effective user ID and report errors
+.TP 8n
+\f[I]explain_setresgid\fP(3)
+Explain \f[I]setresgid\fP(2) errors
+.TP 8n
+\f[I]explain_setresgid_or_die\fP(3)
+set real, effective and saved group ID and report errors
+.TP 8n
+\f[I]explain_setresuid\fP(3)
+Explain \f[I]setresuid\fP(2) errors
+.TP 8n
+\f[I]explain_setresuid_or_die\fP(3)
+set real, effective and saved user ID and report errors
+.TP 8n
+\f[I]explain_setreuid\fP(3)
+Explain \f[I]setreuid\fP(2) errors
+.TP 8n
+\f[I]explain_setreuid_or_die\fP(3)
+set real and/or effective user ID and report errors
+.TP 8n
+\f[I]explain_setsid\fP(3)
+Explain \f[I]setsid\fP(2) errors
+.TP 8n
+\f[I]explain_setsid_or_die\fP(3)
+creates a session and sets the process group ID and report errors
+.TP 8n
+\f[I]explain_setsockopt\fP(3)
+Explain \f[I]setsockopt\fP(2) errors
+.TP 8n
+\f[I]explain_setsockopt_or_die\fP(3)
+execute \f[I]setsockopt\fP(2) and report errors
+.TP 8n
+\f[I]explain_settimeofday\fP(3)
+Explain \f[I]settimeofday\fP(2) errors
+.TP 8n
+\f[I]explain_settimeofday_or_die\fP(3)
+sets system time and report errors
+.TP 8n
+\f[I]explain_setuid\fP(3)
+Explain \f[I]setuid\fP(2) errors
+.TP 8n
+\f[I]explain_setuid_or_die\fP(3)
+set user identity and report errors
+.TP 8n
+\f[I]explain_setvbuf\fP(3)
+Explain \f[I]setvbuf\fP(3) errors
+.TP 8n
+\f[I]explain_setvbuf_or_die\fP(3)
+stream buffering operations and report errors
+.TP 8n
+\f[I]explain_shmat\fP(3)
+Explain \f[I]shmat\fP(2) errors
+.TP 8n
+\f[I]explain_shmat_or_die\fP(3)
+shared memory attach and report errors
+.TP 8n
+\f[I]explain_shmctl\fP(3)
+Explain \f[I]shmctl\fP(2) errors
+.TP 8n
+\f[I]explain_shmctl_or_die\fP(3)
+shared memory control and report errors
+.TP 8n
+\f[I]explain_signalfd\fP(3)
+Explain \f[I]signalfd\fP(2) errors
+.TP 8n
+\f[I]explain_signalfd_or_die\fP(3)
+create a file descriptor for accepting signals and report errors
+.TP 8n
+\f[I]explain_sleep\fP(3)
+Explain \f[I]sleep\fP(3) errors
+.TP 8n
+\f[I]explain_sleep_or_die\fP(3)
+Sleep for the specified number of seconds and report errors
+.TP 8n
+\f[I]explain_socket\fP(3)
+Explain \f[I]socket\fP(2) errors
+.TP 8n
+\f[I]explain_socket_or_die\fP(3)
+create an endpoint for communication and report errors
+.TP 8n
+\f[I]explain_socketpair\fP(3)
+Explain \f[I]socketpair\fP(2) errors
+.TP 8n
+\f[I]explain_socketpair_or_die\fP(3)
+create a pair of connected sockets and report errors
+.TP 8n
+\f[I]explain_sprintf\fP(3)
+Explain \f[I]sprintf\fP(3) errors
+.TP 8n
+\f[I]explain_sprintf_or_die\fP(3)
+formatted output conversion and report errors
+.TP 8n
+\f[I]explain_stat\fP(3)
+Explain \f[I]stat\fP(2) errors
+.TP 8n
+\f[I]explain_statfs\fP(3)
+Explain \f[I]statfs\fP(2) errors
+.TP 8n
+\f[I]explain_statfs_or_die\fP(3)
+get file system statistics and report errors
+.TP 8n
+\f[I]explain_statvfs\fP(3)
+Explain \f[I]statvfs\fP(2) errors
+.TP 8n
+\f[I]explain_statvfs_or_die\fP(3)
+get file system statistics and report errors
+.TP 8n
+\f[I]explain_stime\fP(3)
+Explain \f[I]stime\fP(2) errors
+.TP 8n
+\f[I]explain_stime_or_die\fP(3)
+set system time and report errors
+.TP 8n
+\f[I]explain_strcoll\fP(3)
+Explain \f[I]strcoll\fP(3) errors
+.TP 8n
+\f[I]explain_strcoll_or_die\fP(3)
+compare two strings using the current locale and report errors
+.TP 8n
+\f[I]explain_strdup\fP(3)
+Explain \f[I]strdup\fP(3) errors
+.TP 8n
+\f[I]explain_strdup_or_die\fP(3)
+duplicate a string and report errors
+.TP 8n
+\f[I]explain_strndup\fP(3)
+Explain \f[I]strndup\fP(3) errors
+.TP 8n
+\f[I]explain_strndup_or_die\fP(3)
+duplicate a string and report errors
+.TP 8n
+\f[I]explain_strtod\fP(3)
+Explain \f[I]strtod\fP(3) errors
+.TP 8n
+\f[I]explain_strtod_or_die\fP(3)
+convert string to floating\[hy]point number and report errors
+.TP 8n
+\f[I]explain_strtof\fP(3)
+Explain \f[I]strtof\fP(3) errors
+.TP 8n
+\f[I]explain_strtof_or_die\fP(3)
+convert string to floating\[hy]point number and report errors
+.TP 8n
+\f[I]explain_strtol\fP(3)
+Explain \f[I]strtol\fP(3) errors
+.TP 8n
+\f[I]explain_strtol_or_die\fP(3)
+convert a string to a long integer and report errors
+.TP 8n
+\f[I]explain_strtold\fP(3)
+Explain \f[I]strtold\fP(3) errors
+.TP 8n
+\f[I]explain_strtold_or_die\fP(3)
+convert string to floating\[hy]point number and report errors
+.TP 8n
+\f[I]explain_strtoll\fP(3)
+Explain \f[I]strtoll\fP(3) errors
+.TP 8n
+\f[I]explain_strtoll_or_die\fP(3)
+convert a string to a long long integer and report errors
+.TP 8n
+\f[I]explain_strtoul\fP(3)
+Explain \f[I]strtoul\fP(3) errors
+.TP 8n
+\f[I]explain_strtoul_or_die\fP(3)
+convert a string to a long long integer and report errors
+.TP 8n
+\f[I]explain_strtoull\fP(3)
+Explain \f[I]strtoull\fP(3) errors
+.TP 8n
+\f[I]explain_strtoull_or_die\fP(3)
+convert a string to an unsigned long long integer and report errors
+.TP 8n
+\f[I]explain_symlink\fP(3)
+Explain \f[I]symlink\fP(2) errors
+.TP 8n
+\f[I]explain_symlink_or_die\fP(3)
+make a new name for a file and report errors
+.TP 8n
+\f[I]explain_system\fP(3)
+Explain \f[I]system\fP(3) errors
+.TP 8n
+\f[I]explain_system_or_die\fP(3)
+execute a shell command and report errors
+.\" ----------  T  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_tcdrain\fP(3)
+Explain \f[I]tcdrain\fP(3) errors
+.TP 8n
+\f[I]explain_tcdrain_or_die\fP(3)
+Execute \f[I]tcdrain\fP(3) and report errors
+.TP 8n
+\f[I]explain_tcflow\fP(3)
+Explain \f[I]tcflow\fP(3) errors
+.TP 8n
+\f[I]explain_tcflow_or_die\fP(3)
+Execute \f[I]tcflow\fP(3) and report errors
+.TP 8n
+\f[I]explain_tcflush\fP(3)
+Explain \f[I]tcflush\fP(3) errors
+.TP 8n
+\f[I]explain_tcflush_or_die\fP(3)
+discard terminal data and report errors
+.TP 8n
+\f[I]explain_tcgetattr\fP(3)
+Explain \f[I]tcgetattr\fP(3) errors
+.TP 8n
+\f[I]explain_tcgetattr_or_die\fP(3)
+get terminal parameters and report errors
+.TP 8n
+\f[I]explain_tcsendbreak\fP(3)
+Explain \f[I]tcsendbreak\fP(3) errors
+.TP 8n
+\f[I]explain_tcsendbreak_or_die\fP(3)
+send terminal line break and report errors
+.TP 8n
+\f[I]explain_tcsetattr\fP(3)
+Explain \f[I]tcsetattr\fP(3) errors
+.TP 8n
+\f[I]explain_tcsetattr_or_die\fP(3)
+set terminal attributes and report errors
+.TP 8n
+\f[I]explain_telldir\fP(3)
+Explain \f[I]telldir\fP(3) errors
+.TP 8n
+\f[I]explain_telldir_or_die\fP(3)
+return current location in directory stream and report errors
+.TP 8n
+\f[I]explain_tempnam\fP(3)
+Explain \f[I]tempnam\fP(3) errors
+.TP 8n
+\f[I]explain_tempnam_or_die\fP(3)
+create a name for a temporary file and report errors
+.TP 8n
+\f[I]explain_time\fP(3)
+Explain \f[I]time\fP(2) errors
+.TP 8n
+\f[I]explain_time_or_die\fP(3)
+get time in seconds and report errors
+.TP 8n
+\f[I]explain_timerfd_create\fP(3)
+Explain \f[I]timerfd_create\fP(2) errors
+.TP 8n
+\f[I]explain_timerfd_create_or_die\fP(3)
+timers that notify via file descriptors and report errors
+.TP 8n
+\f[I]explain_tmpfile\fP(3)
+Explain \f[I]tmpfile\fP(3) errors
+.TP 8n
+\f[I]explain_tmpfile_or_die\fP(3)
+create a temporary file and report errors
+.TP 8n
+\f[I]explain_tmpnam\fP(3)
+Explain \f[I]tmpnam\fP(3) errors
+.TP 8n
+\f[I]explain_tmpnam_or_die\fP(3)
+create a name for a temporary file and report errors
+.TP 8n
+\f[I]explain_truncate\fP(3)
+Explain \f[I]truncate\fP(2) errors
+.TP 8n
+\f[I]explain_truncate_or_die\fP(3)
+truncate a file to a specified length and report errors
+.\" ----------  U  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_usleep\fP(3)
+Explain \f[I]usleep\fP(3) errors
+.TP 8n
+\f[I]explain_usleep_or_die\fP(3)
+suspend execution for microsecond intervals and report errors
+.TP 8n
+\f[I]explain_uname\fP(3)
+Explain \f[I]uname\fP(2) errors
+.TP 8n
+\f[I]explain_uname_or_die\fP(3)
+get name and information about current kernel and report errors
+.TP 8n
+\f[I]explain_ungetc\fP(3)
+Explain \f[I]ungetc\fP(3) errors
+.TP 8n
+\f[I]explain_ungetc_or_die\fP(3)
+push a character back to a stream and report errors
+.TP 8n
+\f[I]explain_unlink\fP(3)
+Explain \f[I]unlink\fP(2) errors
+.TP 8n
+\f[I]explain_unlink_or_die\fP(3)
+delete a file and report errors
+.TP 8n
+\f[I]explain_unsetenv\fP(3)
+Explain \f[I]unsetenv\fP(3) errors
+.TP 8n
+\f[I]explain_unsetenv_or_die\fP(3)
+remove an environment variable and report errors
+.TP 8n
+\f[I]explain_ustat\fP(3)
+Explain \f[I]ustat\fP(2) errors
+.TP 8n
+\f[I]explain_ustat_or_die\fP(3)
+get file system statistics and report errors
+.TP 8n
+\f[I]explain_utime\fP(3)
+Explain \f[I]utime\fP(2) errors
+.TP 8n
+\f[I]explain_utime_or_die\fP(3)
+change file last access and modification times and report errors
+.TP 8n
+\f[I]explain_utimens\fP(3)
+Explain \f[I]utimens\fP(2) errors
+.TP 8n
+\f[I]explain_utimens_or_die\fP(3)
+change file last access and modification times and report errors
+.TP 8n
+\f[I]explain_utimensat\fP(3)
+Explain \f[I]utimensat\fP(2) errors
+.TP 8n
+\f[I]explain_utimensat_or_die\fP(3)
+change file timestamps with nanosecond precision and report errors
+.TP 8n
+\f[I]explain_utimes\fP(3)
+Explain \f[I]utimes\fP(2) errors
+.TP 8n
+\f[I]explain_utimes_or_die\fP(3)
+change file last access and modification times and report errors
+.\" ----------  V  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_vasprintf\fP(3)
+Explain \f[I]vasprintf\fP(3) errors
+.TP 8n
+\f[I]explain_vasprintf_or_die\fP(3)
+print to allocated string and report errors
+.TP 8n
+\f[I]explain_vfork\fP(3)
+Explain \f[I]vfork\fP(2) errors
+.TP 8n
+\f[I]explain_vfork_or_die\fP(3)
+create a child process and block parent and report errors
+.TP 8n
+\f[I]explain_vfprintf\fP(3)
+Explain \f[I]vfprintf\fP(3) errors
+.TP 8n
+\f[I]explain_vfprintf_or_die\fP(3)
+formatted output conversion and report errors
+.TP 8n
+\f[I]explain_vprintf\fP(3)
+Explain \f[I]vprintf\fP(3) errors
+.TP 8n
+\f[I]explain_vprintf_or_die\fP(3)
+formatted output conversion and report errors
+.TP 8n
+\f[I]explain_vsnprintf\fP(3)
+Explain \f[I]vsnprintf\fP(3) errors
+.TP 8n
+\f[I]explain_vsnprintf_or_die\fP(3)
+formatted output conversion and report errors
+.TP 8n
+\f[I]explain_snprintf\fP(3)
+Explain \f[I]snprintf\fP(3) errors
+.TP 8n
+\f[I]explain_snprintf_or_die\fP(3)
+formatted output conversion and report errors
+.TP 8n
+\f[I]explain_vsprintf\fP(3)
+Explain \f[I]vsprintf\fP(3) errors
+.TP 8n
+\f[I]explain_vsprintf_or_die\fP(3)
+formatted output conversion and report errors
+.\" ----------  W  ---------------------------------------------------------
+.TP 8n
+\f[I]explain_wait\fP(3)
+Explain \f[I]wait\fP(2) errors
+.TP 8n
+\f[I]explain_wait_or_die\fP(3)
+wait for process to change state and report errors
+.TP 8n
+\f[I]explain_wait3\fP(3)
+Explain \f[I]wait3\fP(2) errors
+.TP 8n
+\f[I]explain_wait3_or_die\fP(3)
+wait for process to change state and report errors
+.TP 8n
+\f[I]explain_wait4\fP(3)
+Explain \f[I]wait4\fP(2) errors
+.TP 8n
+\f[I]explain_wait4_or_die\fP(3)
+wait for process to change state and report errors
+.TP 8n
+\f[I]explain_waitpid\fP(3)
+Explain \f[I]waitpid\fP(2) errors
+.TP 8n
+\f[I]explain_waitpid_or_die\fP(3)
+wait for process to change state and report errors
+.TP 8n
+\f[I]explain_write\fP(3)
+Explain \f[I]write\fP(2) errors
+.TP 8n
+\f[I]explain_write_or_die\fP(3)
+write to a file descriptor and report errors
+.TP 8n
+\f[I]explain_writev\fP(3)
+Explain \f[I]writev\fP(2) errors
+.TP 8n
+\f[I]explain_writev_or_die\fP(3)
+write data from multiple buffers and report errors
+.\" ----------  X  ---------------------------------------------------------
+.\" ----------  Y  ---------------------------------------------------------
+.\" ----------  Z  ---------------------------------------------------------
+.\" ------------------------------------------------------------------------
+.PP
+There are plans for additional coverage.
+This list is expected to expand in later releases of this library.
+.SH SEE ALSO
+.TP 8n
+\f[I]errno\fP(3)
+number of last error
+.TP 8n
+\f[I]perror\fP(3)
+print a system error message
+.TP 8n
+\f[I]strerror\fP(3)
+return string describing error number
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2008 Peter Miller
+.SH AUTHOR
+Written by Peter Miller <pmiller@opensource.org.au>
+.\" vim: set ts=8 sw=4 et :

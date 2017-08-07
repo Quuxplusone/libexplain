@@ -1,0 +1,661 @@
+Read Me(libexplain)                                        Read Me(libexplain)
+
+
+
+NAME
+       libexplain - Explain errno values returned by libc functions
+
+DESCRIPTION
+       The libexplain package provides a library which may be used to explain
+       Unix and Linux system call errors.  This will make your application's
+       error messages much more informative to your users.
+
+       The library is not quite a drop-in replacement for strerror(3), but it
+       comes close.  Each system call has a dedicated libexplain function, for
+       example
+              fd = open(path, flags, mode);
+              if (fd < 0)
+              {
+                  fprintf(stderr, "%s\n", explain_open(path, flags, mode));
+                  exit(EXIT_FAILURE);
+              }
+       If, for example, you were to try to open no-such-dir/some-file, you
+       would see a message like
+              open(pathname = "no-such-dir/some-file", flags = O_RDONLY)
+              failed, No such file or directory (2, ENOENT) because there is
+              no "no-such-dir" directory in the current directory
+
+       The good new is that for each of these functions there is a wrapper
+       function, in this case explain_open_or_die(3), that includes the above
+       code fragment.  Adding good error reporting is as simple as using a
+       different, but similarly named, function.  The library also provides
+       thread safe variants of each explanation function.
+
+       Coverage includes 221 system calls and 547 ioctl requests.
+
+   Tutorial Documentation
+       There is a paper available in PDF format
+       (http://libexplain.sourceforge.net/lca2010/lca2010.pdf) that describes
+       the library and how to use LibExplain.  The paper can also be accessed
+       as explain_lca2010(1), which also appears in the reference manual (see
+       below).
+
+HOME PAGE
+       The latest version of libexplain is available on the Web from:
+
+          URL:    http://libexplain.sourceforge.net/
+          File:   index.html              # the libexplain page
+          File:   libexplain.1.4.README   # Description, from the tar file
+          File:   libexplain.1.4.lsm      # Description, LSM format
+          File:   libexplain.1.4.tar.gz   # the complete source
+          File:   libexplain.1.4.pdf      # Reference Manual
+
+BUILDING LIBEXPLAIN
+       Full instructions for building libexplain may be found in the BUILDING
+       file included in this distribution.
+
+COPYRIGHT
+       libexplain version 1.4
+       Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014 Peter Miller
+
+   Library License
+       The shared library, and its include files, are GNU LGPL licensed.
+
+       This program is free software; you can redistribute it and/or modify it
+       under the terms of the GNU Lesser General Public License as published
+       by the Free Software Foundation; either version 3 of the License, or
+       (at your option) any later version.
+
+       This program is distributed in the hope that it will be useful, but
+       WITHOUT ANY WARRANTY; without even the implied warranty of
+       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+       Lesser General Public License for more details.
+
+       You should have received a copy of the GNU Lesser General Public
+       License along with this program. If not, see
+       <http://www.gnu.org/licenses/>.
+
+   Non-Library License
+       Everything else (all source files that do not constitute the shared
+       library and its include files) are GNU GPL licensed.
+
+       This program is free software; you can redistribute it and/or modify it
+       under the terms of the GNU General Public License as published by the
+       Free Software Foundation; either version 3 of the License, or (at your
+       option) any later version.
+
+       This program is distributed in the hope that it will be useful, but
+       WITHOUT ANY WARRANTY; without even the implied warranty of
+       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+       General Public License for more details.
+
+       You should have received a copy of the GNU General Public License along
+       with this program. If not, see <http://www.gnu.org/licenses/>.
+
+AUTHOR
+       Peter Miller   E-Mail:   pmiller@opensource.org.au
+       /\/\*             WWW:   http://www.canb.auug.org.au/~millerp/
+
+RELEASE NOTES
+       This section details the various features and bug fixes of the various
+       releases.  For excruciating and complete detail, and also credits for
+       those of you who have generously sent me suggestions and bug reports,
+       see the etc/CHANGES.* files.
+
+       Coverage includes 221 system calls and 547 ioctl requests.
+
+   Version 1.4 (2014-Mar-03)
+       * Numerous false negative test results, have been fixed on FreeBSD.
+
+       * When building on FreeBSD some interesting flags need to be specified
+         CC=gvc46 \ CPPFLAGS=-I/usr/local/include \ LDFLAGS=-L/usr/local/lib \
+
+       Also care must be taken if an earlier version of libexplain is
+       installed, and can be found on $LD_LIBRARY_PATH, this may cause false
+       negatives.
+
+       * This change set adds mor efixes for FreeBSD compilation.
+
+       * Some problems discovered using the clang compiler have been fixed.
+         This is a work in progress.
+
+       * My thanks to Vinxxe <vinxxe@gmail.com> for reporting a problem
+         compiling from source.
+
+       * Explanations are now available for errors reported by the
+         lchownat(2), linkat(2), mount(2), nanosleep(3), settimeofday(2),
+         sleep(3), uname(2), usleep(3), system calls.
+
+       * Added a work-around for gethostname on Darwin/OSX.
+
+       * This change set borrows some of the glib nanosleep fixes.
+
+   Version 1.3 (2013-Nov-19)
+       * Explanations are now available or errors reported by the
+         acl_from_text(3), acl_get_fd(3), acl_get_file(3), acl_set_fd(3),
+         acl_set_file(3), acl_to_text(3), asprintf(3), avasprintf(3),
+         endgrent(3), fchownat(2), fseek(3), fstatat(2), ftello(3),
+         futimensat(2), futimens(3), getgrent(3), getgrouplist(3),
+         gethostid(3), getprioriy(2), iconv_close(3), iconv(3), iconv_open(3),
+         lutimes(2), openat(2), pipe2(2), setgrent(3), setpriority(2) and
+         strcoll(3) system calls.
+
+       * The malloc(3), et a, diagnostics are now more aware of getrlimi(2)
+         and getrusage(2), in order to give more informative messages.
+
+       * YunQiang Su <wzssyqa@gmail.com> build problem where a symbol is
+         #defined, but it's empty, throwing a warning about uninitialized
+         members.
+         Debian: Closes: #723409
+
+       * Chris Leick <c.leick@vollbio.de> contributed a German message
+         translation.
+
+       * Eric Smith <brouhaha@fedoraproject.org> discovered that test 555
+         could give a false negative if process 666 exists when the test is
+         run.
+
+   Version 1.2 (2013-Mar-14)
+       * Explanations are now available for errors reported by the
+         gethostbyname and getrusage system calls.
+
+       * Emanuel Haupt <ehaupt@FreeBSD.org> discovered that libexplain coped
+         poorly with different versions of bison emitting code chunks in
+         different orders.  =======
+
+       * getrusage system call.  Explanations are now available for errors
+         reported by the gethostbynam(3) andgetrusage(2) system calls.
+
+       * Emanuel Haupt <ehaupt@FreeBSD.org> discovered that libexplain coped
+         poorly with different versions of bison emitting code chunks in
+         different orders.
+
+       * This change set copes with the absence of a v4l2_buffer member, which
+         recently happened in Ubuntu Raring. My thanks to the LaunchPad PPA
+         build farm for finding this problem.
+
+   Version 1.1 (2012-Nov-20)
+       * Explanations are now available for errors reported by the execv(3),
+         getresgid(2), getresuid(2), lchmod(2), setgid(2) setregid(2),
+         setresgid(2), setresuid(2), setreuid(2), setuid(2) and utimens(2)
+         system calls.
+
+       * Emanuel Haupt <ehaupt@critical.ch> discovered that the error handling
+         for shmat(2) on BSD needed more portability work.
+
+       * There are new explain_filename_from_stream and
+         explain_filename_from_fildes functions to the public API. This gives
+         library clients access to libexplain's idea of the filename.
+
+       * Michael Cree <mcree@orcon.net.nz> discovered that there was a problem
+         building libexplain on alpha architecture.
+         Debian: Closes: #661440
+
+   Version 1.0 (2012-May-19)
+       * Several testing false negative has been fix, concerning EACCES when
+       executed by root.
+
+   Version 0.52 (2012-Mar-04)
+       * A false negative in test 76, where Linux security modules change the
+       rename(2) semantics.
+
+       * A problem on sparc64 has been fixed.  Libexplain can now cope with a
+       missing O_LARGEFILE declaration, and yet file flags returned by the
+       kernel have the flag set.
+
+       * A build problem on Debian alpha has been fixed, the name of an
+       include file was incorrect.
+
+   Version 0.51 (2012-Jan-26)
+       * The ptrace(2) support has been improved with more conditionals
+         determined by the ./configure script when building.
+         Debian: Closes: #645745
+
+   Version 0.50 (2012-Jan-16)
+       * SpepS <spepsforge@users.sf.net> and Eric Smith <eric@brouhaha.com>
+       discovered that _PC_MIN_HOLE_SIZE isn't supported for all Linux. Some
+       more #ifdef was added.
+
+       * Several false negatives from tests have been fixed.
+       Debian: Closes: 654199
+
+       * The tarball now includes a libexplain.spec file for building an RPM
+       package using rpmbuild(1).
+
+       * This change set makes the exe(readlink) string search less
+       particular, so that it works in more cases.  In this instance, on
+       Fedora 14.
+
+       * Explanations are nowe available for errors reported by the
+       realpath(3) system call.
+
+   Version 0.49 (2011-Nov-10)
+       * Explanations are now available for errors reported by the shmctl(2)
+         system call.
+
+       * Some build problems (discovered by the LaunchPad PPA buid farm) have
+         been fixed.
+
+   Version 0.48 (2011-Nov-08)
+       * Explanations are now available for errors reported by the shmat(2)
+         system call.
+
+       * Several build problems on Solaris have been fixed.
+
+       * Dagobert Michelsen <dam@opencsw.org> found the test 625 was throwing
+         a false negative in his test environment. It can now cope with stdin
+         being closed.
+
+       * Dagobert Michelsen <dam@opencsw.org> discovered that, on Solaris,
+         test false negatives were caused by the need for a space before the
+         width in a "fmt -w 800" command.
+
+       * Eric Smith <eric@brouhaha.com> discovered that lsof(1) could report
+         errors as executable names, when it couldn't read the symlink.  These
+         non-results are now filtered out.
+
+       * Eric Smith <eric@brouhaha.com> discovered three false negatives from
+         tests of the kill(2) system call.
+
+       * Better explanations are now available when a user attempts to execute
+         a directory.
+
+   Version 0.47 (2011-Sep-27)
+       * Explanations are now available for errors reported by the setsid(2)
+         system call.
+
+       * The Ubuntu PPA build farm found several Hardy build problems.  These
+         have been fixed.
+
+       * Code has been added to detect those cases where a file descriptor may
+         be open for reading and writing, but the I/O stream it is accessed by
+         is only open for one of them.
+
+       * Code has been added to cope with false negatives when lsof(1) is not
+         as helpful as could be desired.
+
+       * Michael Bienia <geser@ubuntu.com> discovered a build problem with the
+         SIOCSHWTSTAMP ioctl request, and sent a patch.
+
+
+   Version 0.46 (2011-Aug-24)
+       * LibExplain has been ported to Solaris 8, 9 and 10.  My thanks to
+       Dagobert Michelsen and http://opencsw.org/ for assistance with this
+       port.
+
+       * Several more Linux ioctl(2) requests are supported.
+
+       * A segfault has been fixed in the output tee filter when handling
+       exit.
+
+   Version 0.45 (2011-Jul-17)
+       * Dagobert Michelsen <dam@opencsw.org> discoversed several build
+         problems on OpenSolaris; these have been fixed.
+
+       * Explanations are now available for errors reported by the Linux
+         ioctl(2) V4L1 system calls.
+
+
+   Version 0.44 (2011-Jul-03)
+       * Several build problem to do with older Linux kernels have been fixed.
+
+
+   Version 0.42 (2011-Jul-02)
+       * Explanations are now available for errors reported by the V4L2 ioctl
+         requests.
+
+       * The Debian package no longer installs the libtool *.la file.
+         Debian: Closes: 621621
+
+       * The call arguments printed for ioctl(2) now include the type of the
+         third argument.
+
+       * The error messages now include more information about block and
+         character special devices, when printing file types.
+
+   Version 0.42 (2011-May-26)
+       * This change set adds an "ldconfig" hint to the BUILDING instructions.
+         My thanks to Blake McBride <blake@arahant.com> for this suggestion.
+
+       * Emanuel Haupt <ehaupt@critical.ch> reported several problems building
+         libexplain on FreeBSD.  These have been fixed.
+
+   Version 0.41 (2011-Mar-15)
+       * There were some C++ keywords in the unclude files, which caused
+         problems for C++ users.  They have been replaced.
+
+       * Explanations are now availaible for errors reported by the
+         getpgid(2), getpgrp(2), ptrace(2), setgpid(2) and setpgrp(2) system
+         calls.
+
+   Version 0.40 (2010-Oct-05)
+       * The code now builds and tests successfully on FreeBSD.
+
+       * Explanations are now available for errors reported by the calloc(3)
+         and poll(2) system calls.
+
+   Version 0.39 (2010-Sep-12)
+       * A build problem has been fixed on Ubuntu Hardy, a number of symbols
+         are absent from older versions of <linux/cdrom.h>, conditional code
+         has been added for them.
+
+       * A bug has been fixed in one of the documentation files, it was
+         missing the conditional around the .XX macro, causing rpmlint(1) and
+         lintian(1) to complain.
+
+   Version 0.38 (2010-Sep-08)
+       * Some build problems on Fedora 13 have been fixed.
+
+   Version 0.37 (2010-Aug-27)
+       * The library source files are supposed to be LGPL, however over 1000
+         of them were GPL (about 20%). This has been fixed.
+
+       * A couple of problems building on Fedora 13 have been fixed.
+
+   Version 0.36 (2010-Aug-25)
+       * Several false negative reported by tests on the Linux "alpha" and
+         "ia64" architectures have been fixed.
+
+   Version 0.35 (2010-Aug-15)
+       * A number of falve negatives from tests have been fixed, primarily due
+         to random differences between Linux architectures.
+
+       * The BUILDING document goes into more detail about things that can
+         cause false negatives when testing.
+
+       * The man pages have been fixed so that they no longer contain
+         unescaped hyphen characters, as warned about by the lintian(1)
+         program.
+
+   Version 0.34 (2010-Aug-07)
+       * Another test 33 false negative has been fixed.
+
+       * There is a new "hanging-indent" option, that can be set from the
+         EXPLAIN_OPTION environment variable.  It defaults to zero for
+         backwards compatibility.  Applications may set it using the
+         explain_option_hanging_indent_set(3) function.
+
+   Version 0.33 (2010-Jul-04)
+       * A number of testing false negatives (found by the Debian build farm)
+         have been fixed.
+
+       * There are new explain_output_error(3) and
+         explain_output_error_and_die(3) functions for printing formatted
+         error messages.
+
+       * Some systems have mmap(2) report (void*)(-1) instead of NULL for
+         errors.  This is now understood.
+
+   Version 0.32 (2010-Jun-22)
+       * Explanations are now available for errors reported by the mmap(2),
+         munmap(2) and utimes(2) system calls.
+
+       * A number of false negatives for tests on some less common
+         architectures have been fixed.
+
+       * Some build problems relating to ioctl(2) support have been fixed.
+
+       * A bug has been fixed in the libexplain/output.h file, it was missing
+         the C++ insulation.
+
+   Version 0.31 (2010-May-01)
+       * A number of build problems have been fixed.
+
+   Version 0.30 (2010-Apr-28)
+       * Several test false negatives have been fixed, on various Debian
+         architectures.
+
+   Version 0.29 (2010-Apr-25)
+       * A number of build problems, discovered by the Debian build farm, have
+         been fixed.  Who would of thought that there could be some much
+         inconsistency between Linux architectures?
+
+   Version 0.28 (2010-Apr-19)
+       * Several architecture-specific build problems, found by the Debian
+         build farm, have been fixed.
+
+   Version 0.27 (2010-Apr-17)
+       * Several architecture-specific build problems, found by the Debian
+         build farm, have been fixed.
+
+   Version 0.26 (2010-Apr-06)
+       * A build problem has been fixed on systems where va_list is not
+         compatible with const void *
+
+       * This change set removes the unused-result warning form
+         explain_lseek_or_die(3), because it is very common to ignore the
+         result.
+
+       * Explanations are now available for errors reported by the
+         socketpair(2) system call.
+
+   Version 0.25 (2010-Mar-22)
+       * Portability of the code has been improved.
+
+       * The explain(3) man page now mentions AC_SYS_LARGEFILE in the building
+         requirements.
+
+       * Coverage now includes the fprintf(3), printf(3), snprintf(3),
+         sprintf(3), vfprintf(3), vprintf(3), vsnprintf(3) and vsprintf(3)
+         system calls.
+
+   Version 0.24 (2010-Mar-03)
+       * It is now possible to redirected libexplain output.  For example, it
+         is now possible to redirect all output to syslog(3).
+
+       * Coverage now includes the fstatvfs(2) and statvfs(2) system call.
+
+       * A number of problems found while building and testing on Solaris have
+         been fixed.
+
+   Version 0.23 (2010-Feb-21)
+       * It turns out that on alpha architecture, you can't disambiguate the
+         FIBMAP vs BMP_IOCTL case in the pre-processor.  The code now uses a
+         disambiguate function.  This problem was discovered by the Debian
+         build farm.
+
+   Version 0.22 (2010-Feb-12)
+       * This change set fixes a false negative found by the Debian automated
+         build system.
+
+   Version 0.21 (2010-Feb-09)
+       * Explanations are now available for errors reported by the fpurge(3),
+         getw(3) and putw(3) system calls.
+
+       * Some build problems have been fixed.
+
+   Version 0.20 (2010-Jan-20)
+       * Several lintian warnings relating to the man pages have been fixed.
+
+       * The LIBEXPLAIN_OPTIONS environment variable now understands a new
+         symbolic-mode-bits=true option.  It defaults to false, for shorter
+         error explanations.
+
+       * There is a new explain_lca2010(1) man page.  This is a gentle
+         introduction to libexplain, and the paper accompanying my LCA 2010
+         talk.
+
+       * When process ID (pid) values are printed, they are now accompanied by
+         the name of the process executable, when available.
+
+       * Numerous build bugs and niggles have been fixed.
+
+       * Explanations are now available for errors reported by the execlp(3),
+         fdopendir(3), feof(3), fgetpos(3), fputs(3), fseek(3), fsetpos(3),
+         fsync(2), ftell(3), mkdtemp(3), mknod(2), mkostemp(3), mkstemp(3),
+         mktemp(3), putenv(3), puts(3), raise(3), setbuf(3), setbuffer(3),
+         setenv(3), setlinebuf(3), setvbuf(3), stime(2), tempnam(3),
+         tmpfile(3), tmpnam(3), ungetc(3), unsetenv(3) and vfork(2) system
+         calls.
+
+       * The ioctl requests from linux/sockios.h, linux/ext2_fs.h,
+         linux/if_eql.h, PPP, linux/lp.h, and linux/vt.h are now understood.
+         Several of the ioctl explanations have been improved.
+
+   Version 0.19 (2009-Sep-07)
+       * The ioctl requests from linux/hdreg.h are now understood.
+
+       * Some build problems on Debian Lenny have been fixed.
+
+   Version 0.18 (2009-Sep-05)
+       * More ioctl requests are   understood.
+
+       * Explanations are now available for errors reported by the
+         tcsendbreak(3), tcsetattr(3), tcgetattr(3), tcflush(3), tcdrain(3),
+         system calls.
+
+   Version 0.17 (2009-Sep-03)
+       * Explanations are now available for errors reported by the telldir(3)
+         system call.
+
+       * A number of Linux build problems have been fixed.
+
+       * Explanations for a number of corner-cases of the open(2) system call
+         have been improved, where flags values interact with file types and
+         mount options.
+
+       * A number of BSD build problems have been fixed.
+
+       * More ioctl(2) commands are understood.
+
+       * A bug has been fixed in the way absolute symbolic links are processed
+         by the path_resolution code.
+
+   Version 0.16 (2009-Aug-03)
+       * The EROFS and ENOMEDIUM explanations now greatly improved.
+
+       * A number of build problems and false negatives have been fixed on
+         x86_64 architecture.
+
+       * The Linux floppy disk and CD-ROM ioctl requests are now supported.
+
+       * Explanations are now available for the errors reported by the
+         getdomainname(2), readv(2), setdomainname(2), ustat(2) and writev(2)
+         system calls.
+
+   Version 0.15 (2009-Jul-26)
+       * A number of build errors and warnings on amd64 have been fixed.  The
+         problems were only detectable on 64-bit systems.
+
+   Version 0.14 (2009-Jul-19)
+       * Coverage now includes another 29 system calls: accept4(2), acct(2),
+         adjtime(3), adjtimex(2), chroot(2), dirfd(3), eventfd(2), fflush(3),
+         fileno(3), flock(2), fstatfs(2), ftime(3), getgroups(2),
+         gethostname(2), kill(2), nice(2), pread(2), pwrite(2),
+         sethostname(2), signalfd(2), strdup(3), strtod(3), strtof(3),
+         strtol(3), strtold(3), strtoll(3), strtoul(3), strtoull(3), and
+         timerfd_create(2).  A total of 110 system calls are now supported
+
+       * The ./configure script no longer demands lsof(1).  The Linux
+         libexplain code doesn't need lsof(1).  On systems not supported by
+         lsof(1), the error messages aren't quite as useful, but libexplain
+         still works.
+
+       * There is now an explain_*_on_error function for each system call,
+         each reports errors but still returns the original return value to
+         the caller.
+
+   Version 0.13 (2009-May-17)
+       * The web site now links to a number of services provided by
+         SourceForge.
+
+       * Several problems have been fixed with compiling libexplain on 64-bit
+         systems.
+
+   Version 0.12 (2009-May-04)
+       * A build problem has been fixed on hosts that didn't need to do
+         anything special for large file support.
+
+   Version 0.11 (2009-Mar-29)
+       * The current directory is replaced in messages with an absolute path
+         in cases where the user's idea of the current directory may differ
+         from that of the current process.
+
+   Version 0.10 (2009-Mar-24)
+       * The name prefix on all of the library functions has been changed from
+         "libexplain_" to just "explain_".  This was the most requested
+         change.  You will need to change your code and recompile.  Apologies
+         for the inconvenience.
+
+   Version 0.9 (2009-Feb-27)
+       * Two false negatives in the tests have been fixed.
+
+       * The ./configure script now explicitly looks for bison(1), and
+         complains if it cannot be found.
+
+       * The socket(7) address family is now decoded.
+
+   Version 0.8 (2009-Feb-14)
+       * A problem with the Debian packaging has been fixed.
+
+       * The decoding of IPv4 sockaddr structs has been improved.
+
+   Version 0.7 (2009-Feb-10)
+       * Coverage has been extended to include getsockopt(2), getpeername(2),
+         getsockname(2) and setsockopt(2).
+
+       * Build problems on Debian Sid have been fixed.
+
+       * More magnetic tape ioctl controls, from operating systems other than
+         Linux, have been added.
+
+   Version 0.6 (2009-Jan-16)
+       * Coverage has been extended to include execvp(3), ioctl(2), malloc(3),
+         pclose(3), pipe(2), popen(3) and realloc(3) system calls.
+
+       * The coverage for ioctl(2) includes linux console controls, magnetic
+         tape controls, socket controls, and terminal controls.
+
+       * A false negative from test 31 has been fixed.
+
+   Version 0.5 (2009-Jan-03)
+       * A build problem on Debian sid has been fixed.
+
+       * There is a new explain_system_success(3) function, that performs all
+         that explain_system_success_or_die(3) performs, except that it does
+         not call exit(2).
+
+       * There is more i18n support.
+
+       * A bug with the pkg-config(1) support has been fixed.
+
+   Version 0.4 (2008-Dec-24)
+       * Coverage now includes accept(2), bind(2), connect(2), dup2(2),
+         fchown(2), fdopen(3), fpathconf(2), fputc(2), futimes(2),
+         getaddrinfo(2), getcwd(2), getrlimit(2), listen(2), pathconf(2),
+         putc(2), putchar(2), select(2).
+
+       * Internationalization has been improved.
+
+       * The thread safety of the code has been improved.
+
+       * The code is now able to be compiled on OpenBSD.  The test suite still
+         gives many false negatives, due to differences in strerror(3)
+         results.
+
+   Version 0.3 (2008-Nov-23)
+       * Cover has been extended to include closedir(3), execve(2), ferror(3),
+         fgetc(3), fgets(3), fork(2), fread(3), getc(3), gettimeofday(2),
+         lchown(2), socket(2), system(3), utime(2), wait3(2), wait4(2),
+         wait(2), waitpid(2),
+
+       * More internationalization support has been added.
+
+       * A bug has been fixed in the C++ insulation.
+
+   Version 0.2 (2008-Nov-11)
+       * Coverage now includes chmod(2), chown(2), dup(2), fchdir(2),
+         fchmod(2), fstat(2), ftruncate(2), fwrite(3), mkdir(2), readdir(3),
+         readlink(2), remove(3), rmdir(2) and truncate(2).
+
+       * The lsof(1) command is used to obtain supplementary file information
+         on those systems with limited /proc implementations.
+
+       * The explanations now understand Linux capabilities.
+
+   Version 0.1 (2008-Oct-26)
+       First public release.
+
+
+
+Reference Manual                  libexplain               Read Me(libexplain)

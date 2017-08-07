@@ -1,0 +1,126 @@
+/*
+ * libexplain - Explain errno values returned by libc functions
+ * Copyright (C) 2008-2012 Peter Miller
+ * Written by Peter Miller <pmiller@opensource.org.au>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+integration-build-targets += web;
+all += web;
+
+web:
+    [fromto web-src/%0% web-site/%0%
+        [match_mask web-src/%0%.html [source_files]]
+    ]
+    [fromto web-src/%0%.png.uue web-site/%0%.png
+        [match_mask web-src/%0%.png.uue [source_files]]
+    ]
+    [fromto web-src/%0%.png.uue web-site/%0%.128.png
+        [match_mask web-src/%0%.png.uue [source_files]]
+    ]
+    [fromto web-src/%0%.png.uue web-site/%0%.64.png
+        [match_mask web-src/%0%.png.uue [source_files]]
+    ]
+    web-site/fixme.html
+    web-site/[project_minus].README
+    web-site/[project_minus].pdf
+    web-site/lca2010/lca2010.pdf
+    ;
+
+web-site/lca2010/lca2010.pdf: man/pdf1/explain_lca2010.pdf
+    set shallow
+{
+    function quiet_print Copy;
+    cat [resolve [need]] > [target];
+}
+
+web-src/%0%.html.d: web-src/%0%.html
+    set no-cascade
+{
+    function quiet_print Depends;
+    c_incl -nc -ns -eia -r -nrec
+        [addprefix "-I" [search_list]]
+        -prefix "'cascade web-src/"%0%".html ='"
+        -suffix "';'"
+        [resolve web-src/%0%.html]
+        [prepost "-rlp=" "" [search_list]] /* remove leading path */
+        -o [target];
+}
+
+web-deps =
+    [addsuffix ".d" [match_mask web-src/%0%.html [source_files]]]
+    ;;
+#include-cooked-nowarn [web-deps]
+
+web-site/%0%.html: web-src/%0%.html: etc/version.so
+    set shallow
+{
+    function quiet_print Groff;
+
+    groff [addprefix "-I" [search_list]]
+        -Tascii -t -P-bcu -man
+        [resolve web-src/%0%.html]
+        > [target];
+    validate [target];
+}
+
+
+%0%: %0%.uue
+{
+    function quiet_print Uudecode;
+    uudecode -o [target] [resolve %0%.uue];
+}
+
+web-src/%0%1.%2.png: web-src/%0%1.png
+{
+    function quiet_print Generate;
+    convert [resolve web-src/%0%1.png] -scale %2 [target];
+}
+
+web-site/%0%.png: web-src/%0%.png
+    set shallow
+{
+    function quiet_print Copy;
+    cp [resolve web-src/%0%.png] [target];
+}
+
+
+web-site/fixme.html: [source_files] bin/fixme-html
+    set shallow
+{
+    function quiet_print Generate;
+
+    [resolve bin/fixme-html] -o [target] -F-;
+data
+[unsplit "\n" [resolve [source_files]]]
+dataend
+}
+
+web-site/[project_minus].README: README
+    set shallow
+{
+    function quiet_print Copy;
+    cp [resolve README] [target];
+}
+
+web-site/[project_minus].pdf: etc/reference.pdf
+    set shallow
+{
+    function quiet_print Copy;
+    cp [resolve etc/reference.pdf] [target];
+}
+
+
+/* vim: set ts=8 sw=4 et : */

@@ -1,0 +1,90 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2009, 2011 Peter Miller
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or (at
+.\" your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_gethostname_or_die
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_gethostname_or_die 3
+.SH NAME
+explain_gethostname_or_die \- get/set hostname and report errors
+.if require_index \{
+.XX "explain_gethostname_or_die(3)" \
+    "get/set hostname and report errors"
+.\}
+.SH SYNOPSIS
+#include <libexplain/gethostname.h>
+.sp 0.3
+void explain_gethostname_or_die(char *data, size_t data_size);
+.br
+intexplain_gethostname_on_error(char *data, size_t data_size);
+.SH DESCRIPTION
+The \f[B]explain_gethostname_or_die\fP function is used to call the
+\f[I]gethostname\fP(2) system call. On failure an explanation will be
+printed to \f[I]stderr\fP, obtained from the \f[I]explain_gethostname\fP(3)
+function, and then the process terminates by calling
+\f[CW]exit(EXIT_FAILURE)\fP.
+.PP
+The \f[B]explain_gethostname_on_error\fP function is used to call the
+\f[I]gethostname\fP(2) system call. On failure an explanation will be
+printed to \f[I]stderr\fP, obtained from the \f[I]explain_gethostname\fP(3)
+function, but still returns to the caller.
+.TP 8n
+\f[I]data\fP
+The data, exactly as to be passed to the \f[I]gethostname\fP(2) system
+call.
+.TP 8n
+\f[I]data_size\fP
+The data_size, exactly as to be passed to the \f[I]gethostname\fP(2) system
+call.
+.\" ----------------------------------------------------
+.SH RETURN VALUE
+The \f[B]explain_gethostname_or_die\fP function only returns on success,
+see \f[I]gethostname\fP(2) for more information. On failure, prints an
+explanation and exits, it does not return.
+.PP
+The \f[B]explain_gethostname_on_error\fP function always returns the value
+return by the wrapped \f[I]gethostname\fP(2) system call.
+.\" ----------------------------------------------------
+.SH EXAMPLE
+The \f[B]explain_gethostname_or_die\fP function is intended to be used in a
+fashion similar to the following example:
+.RS
+.ft CW
+.nf
+explain_gethostname_or_die(data, data_size);
+.fi
+.ft R
+.RE
+.\" ----------------------------------------------------
+.SH SEE ALSO
+.TP 8n
+\f[I]gethostname\fP(2)
+get/set hostname
+.TP 8n
+\f[I]explain_gethostname\fP(3)
+explain \f[I]gethostname\fP(2) errors
+.TP 8n
+\f[I]exit\fP(2)
+terminate the calling process
+.\" ----------------------------------------------------
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2009 Peter Miller
+.\" vim: set ts=8 sw=4 et

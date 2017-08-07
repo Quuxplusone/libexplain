@@ -1,0 +1,107 @@
+<!--
+  libexplain - Explain errno values returned by libc functions
+  Copyright (C) 2009, 2010 Peter Miller
+  Written by Peter Miller <pmiller@opensource.org.au>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or (at
+  your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+.hy 0
+.ad l
+<!DOCTYPE HTML PUBLIC
+    "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd"
+    >
+.br
+<html>
+<head>
+<title>
+No Medium Found, 6.0, Notes
+</title>
+</head>
+<body>
+
+<table width="100%" >
+<tr>
+    <td align="left" >
+        <a href="500-notes.html" >Prev</a>,
+        <a href="000-notes.html" >Top</a>
+    </td><td align="right" >
+        <a href="600-slide.html" >Slide</a>,
+        <a href="700-notes.html" >Next</a>
+    </td>
+</tr>
+</table>
+
+<h1>
+6. Adventures in <i>ioctl</i>(2) Support
+</h1>
+
+<ul>
+<li> See <i>ioctl_list</i>(2)
+</ul>
+
+<h2> <a name="6.1">6.1</a> Decoding Request Numbers </h2>
+<ul>
+<li> first impression: large but limited set
+<li> switch: they don't play well together<br/>
+     one ioctl handler per source file
+<li> reality: private request numbers
+<li> ambiguity: private <i>and</i> historical (look at file descriptor)
+<li> internal table of pointers (not a problem yet);
+     <a href="600-slide.html" >slide</a>
+<li> ...each has optional "method" to disambiguate
+<li> URL.. follow along the source code
+</ul>
+
+<h2> <a name="6.2">6.2</a> Representation </h2>
+<ul>
+<li> "fildes" is handled the same way as the other system calls
+<li> "request" is handled on previous slide
+<li> accurate representation of 3rd argument;
+     <a href="620-slide.html" >slide</a>
+<li> ...each ioctl request has "method" to print data
+<li> ...output-only requests just print the pointer
+</ul>
+
+<h2> <a name="6.3">6.3</a> Explanations </h2>
+<ul>
+<li> each ioctl request has "method" to print explanation;
+     <a href="630-slide.html" >slide</a>
+<li> set set of <i>errno</i>(3) value usually not documented
+<li> this is where you read kernel source
+</ul>
+
+<h2> <a name="6.4">6.4</a> EINVAL <i>vs</i> ENOTTY </h2>
+<ul>
+<li> like system calls, this is messy;
+     <a href="640-slide.html" >slide</a>
+<li> kernel source comments indicate this may be being dealt with
+<li> also: ENOSYS, ENOTSUP EOPNOTSUP, and (not Linux) ENOIOCTL
+</ul>
+
+<h2> <a name="6.5">6.5</a> intptr_t </h2>
+<ul>
+<li> shoe-horn
+<li> prototype;
+     <a href="650-slide.html" >slide</a>
+<li> ...bye bye type safety
+<li> <i>tcflush</i>(3) and friends
+<li> [e]glibc internally: two ways
+<li> sys_ioctl
+<li> cognitive dissonance = bugs
+<li> intptr_t
+</ul>
+
+</body>
+</html>

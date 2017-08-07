@@ -1,0 +1,269 @@
+/*
+ * libexplain - Explain errno values returned by libc functions
+ * Copyright (C) 2008-2014 Peter Miller
+ * Written by Peter Miller <pmiller@opensource.org.au>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+if [not [defined autoconf]] then
+    autoconf = autoconf;
+if [not [autoconf]] then
+    autoconf = autoconf;
+
+if [not [defined autoheader]] then
+    autoheader = autoheader;
+if [not [autoheader]] then
+    autoheader = autoheader;
+
+bin/%: script/%.sh.in: config.status
+    set shallow
+    single-thread conftest.subs
+{
+    function quiet_print Generate;
+    if [not [exists script]] then
+        mkdir script
+            set clearstat;
+    /* these 2 env vars control what is generated */
+    CONFIG_FILES\=[target]\:[resolve script/%.sh.in] CONFIG_HEADERS\=
+        sh [resolve config.status]
+        ['if' [quiet] 'then' --quiet]
+        ;
+    chmod 755 [target];
+}
+
+/*
+ * The configured files are generated using the config.status script
+ * output by the configure script.  Not all of them are essential to a
+ * build, or are already taken care of, and some are not meaningful.
+ */
+configured_files1 =
+    [match_mask script/%.sh.in [source_files]]
+    ;
+configured_files2 =
+    [stringset
+        [match_mask %0%.in [source_files]]
+    -
+        [configured_files1]
+    ];
+configured_files =
+    [fromto script/%.sh.in bin/% [configured_files1]]
+    [fromto %0%.in %0% [configured_files2]]
+    ;
+configured_files =
+    [stringset
+        [configured_files]
+    -
+        Makefile /* only for integration builds */
+        libexplain/config.h
+        etc/configure
+    ];
+configured_files: [configured_files];
+
+configure: etc/configure.ac install-sh(exists) config.guess config.sub
+{
+    function quiet_print Generate;
+
+    /*
+     * unfortunately,
+     * install-sh must be in the current directory
+     */
+    if [not [exists install-sh]] then
+        ln -s [resolve install-sh] install-sh
+            set clearstat;
+    if [not [exists config.guess]] then
+        ln -s [resolve config.guess] config.guess
+            set clearstat;
+    if [not [exists config.sub]] then
+        ln -s [resolve config.sub] config.sub
+            set clearstat;
+    if [not [exists test_mincore/main.c]] then
+    {
+        mkdir -p test_mincore;
+        rm -f test_mincore/main.c;
+        ln -s ../[resolve test_mincore/main.c] test_mincore/main.c
+            set clearstat;
+    }
+    [autoconf]
+        /* ['if' [quiet] 'then' --quiet] */
+        [resolve etc/configure.ac]
+        > [target];
+    chmod 755 [target];
+}
+
+/*
+ * The install-sh script can come from a huge range of places, depending
+ * on what distribution you have installed (or whether you built it from
+ * the tarball).
+ *
+ * Setting the install-sh variable make cook print the intended error
+ * message instead of a syntax error when the install-sh script does not
+ * exist.
+ */
+install-sh = ;
+loop install-sh-maybe =
+    /usr/share/autoconf/install-sh
+    [glob /usr/share/automake*/install-sh]
+    [glob /usr/local/share/autoconf*/install-sh]
+    [glob /usr/local/share/automake*/install-sh]
+{
+    if [exists [install-sh-maybe]] then
+    {
+        install-sh = [install-sh-maybe];
+        loopstop;
+    }
+}
+if [not [install-sh]] then
+    fail "Can't locate the \"install-sh\" script from GNU automake";
+
+install-sh: [install-sh]
+{
+    function quiet_print Copy;
+    cp [need] [target];
+    chmod 755 [target];
+}
+
+config.sub = ;
+loop config.sub-maybe =
+    /usr/share/autoconf/config.sub
+    /usr/share/automake/config.sub
+    [glob /usr/share/automake*/config.sub]
+    [glob /usr/local/share/autoconf*/config.sub]
+    [glob /usr/local/share/automake*/config.sub]
+{
+    if [exists [config.sub-maybe]] then
+    {
+        config.sub = [config.sub-maybe];
+        loopstop;
+    }
+}
+if [not [config.sub]] then
+    fail "Can't locate the \"config.sub\" script from GNU autoconf";
+
+config.sub: [config.sub]
+{
+    function quiet_print Copy;
+    cp [need] [target];
+    chmod 755 [target];
+}
+
+config.guess = ;
+loop config.guess-maybe =
+    /usr/share/autoconf/config.guess
+    /usr/share/automake/config.guess
+    [glob /usr/share/automake*/config.guess]
+    [glob /usr/local/share/autoconf*/config.guess]
+    [glob /usr/local/share/automake*/config.guess]
+{
+    if [exists [config.guess-maybe]] then
+    {
+        config.guess = [config.guess-maybe];
+        loopstop;
+    }
+}
+if [not [config.guess]] then
+    fail "Can't locate the \"config.guess\" script from GNU autoconf";
+
+config.guess: [config.guess]
+{
+    function quiet_print Copy;
+    cp [need] [target];
+    chmod 755 [target];
+}
+
+config.status: configure install-sh(exists) config.sub config.guess
+{
+    function quiet_print Generate;
+    if [not [exists install-sh]] then
+        ln -s [resolve install-sh] install-sh
+            set clearstat;
+
+    if [not [exists config.sub]] then
+        ln -s [resolve config.sub] config.sub
+            set clearstat;
+
+    if [not [exists config.guess]] then
+        ln -s [resolve config.guess] config.guess
+            set clearstat;
+
+    local flags =;
+    if [defined c++_flags] then
+    {
+        flags += CXXFLAGS\=[quote
+            [unsplit " " [filter_out "-Werror" [split "%" [c++_flags]]]]];
+    }
+
+    if [defined ld_flags] then
+    {
+        flags += LDFLAGS\=[quote [unsplit " " [split "%" [ld_flags]]]];
+    }
+
+    if [defined libs] then
+    {
+        flags += LIBS\=[quote [unsplit " " [split "%" [libs]]]];
+    }
+
+    CC\=[quote [unsplit " " [CC]]]
+    [flags]
+    [pathname [resolve configure]]
+        --cache-file\=/dev/null
+        ['if' [quiet] 'then' --quiet]
+        --no-create --srcdir\=.
+        --sysconfdir\=/etc
+    ;
+}
+
+libexplain/config.h.in: etc/configure.ac
+{
+    function quiet_print Generate;
+    [autoheader] [resolve etc/configure.ac] > [target];
+}
+
+
+%0%.h: %0%.h.in config.status
+    single-thread conftest.subs
+{
+    function quiet_print Generate;
+    if [not [exists [dirname %0%.h]]] then
+        mkdir -p [dirname %0%.h]
+            set clearstat;
+    /* these 2 env vars control what is generated */
+    CONFIG_FILES\= CONFIG_HEADERS\=[target]\:[resolve %0%.h.in]
+        sh [resolve config.status]
+        ['if' [quiet] 'then' --quiet]
+        ;
+}
+
+%0%: %0%.in config.status
+    set ['if' [not [defined baseline]] 'then' shallow]
+    single-thread conftest.subs
+{
+    function quiet_print Generate;
+    if [not [exists [dirname %0%]]] then
+        mkdir [dirname %0%]
+            set clearstat;
+    /* these 2 env vars control what is generated */
+    CONFIG_FILES\=[target]\:[resolve %0%.in] CONFIG_HEADERS\=
+       sh  [resolve config.status]
+        ['if' [quiet] 'then' --quiet]
+       ;
+
+    /*
+     * Make shell scripts and CGI scripts executable.
+     */
+    if [or [matches %%.cgi %] [matches %%.sh %]] then
+        chmod a+rx [target];
+}
+
+/* vim: set ts=8 sw=4 et : */

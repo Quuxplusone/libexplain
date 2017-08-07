@@ -1,0 +1,62 @@
+<!--
+  libexplain - Explain errno values returned by libc functions
+  Copyright (C) 2009, 2010 Peter Miller
+  Written by Peter Miller <pmiller@opensource.org.au>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or (at
+  your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+.hy 0
+.ad l
+<!DOCTYPE HTML PUBLIC
+    "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd"
+    >
+.nf
+<html>
+<head>
+<title>
+No Medium Found, 5.7
+</title>
+</head>
+<body>
+
+<table width="100%" >
+<tr>
+<td align="left" >
+<a href="560-slide.html" >Prev</a>,
+<a href="index.html" >Top</a>
+</td><td align="right" >
+<a href="500-notes.html#5.7" >Notes</a>,
+<a href="580-slide.html" >Next</a>
+</td>
+</tr>
+</table>
+
+<h1 align="center" >
+Strange and Interesting System Calls<br/>
+ENOSPC, No space left on device
+</h1>
+
+<table align="center" width=800 ><tr><td>
+When a user reports ENOSPC, the first thing the sysadmin want to know is
+the mount point, and the user says &ldquo;what's that?&rdquo;
+<blockquote><tt>
+write(fildes = 1 "example", data = 0xbfff2340, data_size = 5)
+failed, No space left on device (28, ENOSPC) because the file system
+containing fildes ("/home") has no more space for data
+</tt></blockquote>
+</td></tr></table>
+
+</body>
+</html>

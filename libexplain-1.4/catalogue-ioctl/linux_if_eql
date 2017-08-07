@@ -1,0 +1,31 @@
+#
+# libexplain - Explain errno values returned by libc functions
+# Copyright (C) 2009 Peter Miller
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 3 of the License, or (at your
+# option) any later version.
+#
+# This program is distributed in the hope that it will be useful,but
+# WITHOUT ANY WARRANTY; without even the implied warranty ofMERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE. See the GNULesser General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+Include: linux/if_eql.h
+#
+# Requests that don't alter system state, device state or media state.
+# These are safe to probe, and will not cause probems or damage.
+Get:
+ EQL_GETMASTRCFG
+ EQL_GETSLAVECFG
+#
+# These are requests that alter the system state.
+Set:
+ EQL_EMANCIPATE
+ EQL_ENSLAVE
+ EQL_SETMASTRCFG
+ EQL_SETSLAVECFG

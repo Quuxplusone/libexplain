@@ -1,0 +1,56 @@
+#
+# libexplain - Explain errno values returned by libc functions
+# Copyright (C) 2013 Peter Miller
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 3 of the License, or (at your
+# option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+Include: linux/lp.h
+#
+# Requests that don't alter system state, device state or media state.
+# These are safe to probe, and will not cause probems or damage.
+Get:
+ LPGETFLAGS
+ LPGETIRQ
+ LPGETSTATS
+ LPGETSTATUS
+#
+# These are requests that alter the system state.
+Set:
+ LPABORT
+ LPABORTOPEN
+ LPCAREFUL
+ LPCHAR
+ LPRESET
+ LPSETIRQ
+ LPSETTIMEOUT
+ LPTIME
+ LPWAIT
+ LP_ABORT
+ LP_ABORTOPEN
+ LP_BUSY
+ LP_CAREFUL
+ LP_DATA_AVAIL
+ LP_ERR
+ LP_EXIST
+ LP_NOPA
+ LP_NO_REVERSE
+ LP_OFFL
+ LP_PACK
+ LP_PBUSY
+ LP_PERRORP
+ LP_POUTPA
+ LP_PSELECD
+ LP_SELEC
+ LP_TRUST_IRQ_
+# vim: set ts=8 sw=4 et :

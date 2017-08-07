@@ -1,0 +1,150 @@
+<!--
+  libexplain - Explain errno values returned by libc functions
+  Copyright (C) 2009, 2010 Peter Miller
+  Written by Peter Miller <pmiller@opensource.org.au>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or (at
+  your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+.hy 0
+.ad l
+<!DOCTYPE HTML PUBLIC
+    "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd"
+    >
+.nf
+<html>
+<head>
+<title>
+No medium Found, 5.0, Notes
+</title>
+</head>
+<body>
+
+<table width="100%" >
+<tr>
+    <td align="left" >
+        <a href="400-notes.html" >Prev</a>,
+        <a href="000-notes.html" >Top</a>
+    </td><td align="right" >
+        <a href="500-slide.html" >Slide</a>,
+        <a href="600-notes.html" >Next</a>
+    </td>
+</tr>
+</table>
+
+<h1>
+5. Strange and Interesting System Calls
+</h1>
+
+<ul>
+<li> one strerror-equivalent per system call
+<li> boundary conditions
+<li> multiple causes for the same <i>errno</i> value
+<li> multiple <i>errno</i> values for the same cause
+<li> coders@slug mailing list
+</ul>
+
+<h2> <a name="5.1">5.1</a> ENOMEDIUM </h2>
+<ul>
+<li> of course, they are all frauds; <a href="500-slide.html" >slide</a>
+<li> Native English speakers don't know that &ldquo;media&rdquo; is a plural,
+     let alone that &ldquo;medium&rdquo; is its singular.
+<li> this <i>strerror</i>(3) string is almost content-free.
+<li> surely this could be more informative; <a href="510-slide.html" >slide</a>
+<li> O_NONBLOCK
+<li> it also groks floppies, magnetic tapes, MMC card readers, <i>etc</i>
+<li> disc-with-a-c <i>vs</i> disk-with-a-k
+</ul>
+
+<h2> <a name="5.2">5.2</a> EFAULT </h2>
+<ul>
+<li> one pointer is easy; <a href="520-slide.html" >slide</a>
+<li> must not disturb process (thread) signal handlers
+<li> bounded memory: <i>mincore</i>(2)
+<li> strings: <i>lstat</i>(2)
+</ul>
+
+<h2> <a name="5.3">5.3</a> EMFILE </h2>
+<ul>
+<li> The message includes the limit; <a href="530-slide.html" >slide</a>
+<li> can't use <tt>/proc</tt>
+<li> <i>sysconf</i>(3) is very handy
+<li> of course, it could be a single-open device that
+     is already open or mounted
+</ul>
+
+<h2> <a name="5.4">5.4</a> ENFILE </h2>
+<ul>
+<li> The message includes the limit; <a href="540-slide.html" >slide</a>
+<li> can't use <tt>/proc</tt>
+<li> <i>sysconf</i>(3) is very handy
+<li> this is when you read kernel sources
+<li> system call with no [e]glibc binding<br>
+     <tt>CTL_FS, FS_MAXFILE</tt>
+</ul>
+
+<h2> <a name="5.5">5.5</a> EPERM <i>vs</i> ENOSYS </h2>
+<ul>
+<li> also EINVAL sometimes
+<li> same cause, different <i>errno</i>(3) values;
+     <a href="550-slide.html" >slide</a>
+<li> same <i>errno</i>(3) value, different causes;
+     <a href="551-slide.html" >slide</a>
+<li> wishlist: pathconf for "is this fops pointer non-null"
+</ul>
+
+<h2> <a name="5.6">5.6</a> <i>errno</i>(3) is not always set </h2>
+<ul>
+<li> <a href="560-slide.html" >slide</a>
+<li> <i>somtimes</i> they set <i>errno</i>(3),
+     sometimes they don't.
+<li> traps for young players (old ones, too)
+<li> not going into each one, read the paper
+<li> who knew that <i>fileno</i>(3) could fail?
+</ul>
+
+<h2> <a name="5.7">5.7</a> ENOSPC </h2>
+<ul>
+<li> <a href="570-slide.html" >slide</a>
+<li> print the mount point
+<li> work in progress (inodes vs data vs directory entries)
+<li> special devices already includes device name...
+<li> &...need to add device size, without altering state
+</ul>
+
+<h2> <a name="5.8">5.8</a> EROFS </h2>
+<ul>
+<li> file systems print the mount point; <a href="580-slide.html" >slide</a>
+<li> devices are more specific
+<li> work in progress: filesys case could drill down
+<li> work in progress: not all devices this accurate<br/>
+\&...because a CD-ROM is not writable<br/>
+\&...because the memory card has the write protect tab set<br/>
+\&...because the &frac12; inch magnetic tape does not have a write ring<br/>
+</ul>
+
+<h2> <a name="5.9">5.9</a> <i>rename</i>(2) </h2>
+<ul>
+<li> not talking about <i>mv</i><(1)
+<li> <i>rename</i>(2) directory over directory;
+     <a href="590-slide.html" >slide</a>
+<li> destination must be empty
+<li> implies all the <i>rmdir</i>(2) errors as well
+<li> but not files over directories, or <i>vice versa</i>
+<li> who knew: <i>dup2</i>(2) is the same
+<li> ...implies all the <i>unlink</i>(2) errors as well
+</ul>
+
+</body>
+</html>

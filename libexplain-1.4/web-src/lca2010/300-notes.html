@@ -1,0 +1,128 @@
+<!--
+  libexplain - Explain errno values returned by libc functions
+  Copyright (C) 2009, 2010 Peter Miller
+  Written by Peter Miller <pmiller@opensource.org.au>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or (at
+  your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+.hy 0
+.ad l
+<!DOCTYPE HTML PUBLIC
+    "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd"
+    >
+.nf
+<html>
+<head>
+<title>
+No Medium Found, 3.0, Notes
+</title>
+</head>
+<body>
+
+<table width="100%" >
+<tr>
+    <td align="left" >
+        <a href="200-notes.html" >Prev</a>,
+        <a href="000-notes.html" >Top</a>
+    </td><td align="right" >
+        <a href="300-slide.html" >Slide</a>,
+        <a href="400-notes.html" >Next</a>
+    </td>
+</tr>
+</table>
+
+<h1>
+3. Message Content
+</h1>
+
+This code:
+<blockquote>
+int fd = explain_open_or_die("some/thing", O_RDONLY, 0);
+</blockquote>
+produces this messsage:
+<blockquote>
+open(pathname = "some/file", flags = O_RDONLY) failed,
+No such file or directory (2, ENOENT) because there is
+no "some" directory in the current directory
+</blockquote>
+This breaks down into three pieces:
+<blockquote>
+<i>system-call</i> failed, <i>system-error</i> because <i>explanation</i>
+</blockquote>
+<h2> <a name="3.1">3.1</a> Before Because </h2>
+<a href="310-slide.html" >slide</a>
+<blockquote>
+open(pathname = "some/file", flags = O_RDONLY) failed,
+No such file or directory (2, ENOENT) because ...
+</blockquote>
+
+<ul>
+<li> This is the proximal cause.
+<li> Developers find it useful.
+<li> If not in error message, user can't copy-and-paste into bug report.
+<li> Maintainers find that useful (once apon a time, on a file system
+     far, far away...)
+<li> Arguments names used in explanation for context.
+<li> <b>Note:</b> I have been using error messages with this level of detail
+     for many years, and they go over rather well, contrary to expectations.
+<li> Users like it when you don't talk down to them.
+     Give them some credit.
+</ul>
+
+<h2> <a name="3.2">3.2</a> After Because </h2>
+<a href="320-slide.html" >slide</a>
+
+<blockquote>
+\&...because there is no "some" directory in the current directory
+</blockquote>
+
+<ul>
+<li> This portion attempts to explain the proximal cause of the error in
+plain language.
+<li> It attempts to include as much information as possible,
+<li>possibly delving deeply into the semantics of the system call,
+<li>including looking at owners and permission bits.
+</ul>
+
+<h2> <a name="3.3">3.3</a> Internationalization </h2>
+<a href="330-slide.html" >slide</a>
+
+<ul>
+<li> Most of them &mdash; left over proof-of-concept
+<li> No localizations
+</ul>
+
+<h2> <a name="3.4">3.4</a> Postmortem </h2>
+<a href="340-slide.html" >slide</a>
+<ul>
+<li> <tt>explain</tt>
+<li> need to know system call
+<li> need to know errno
+<li> how to turn errno value into string<br/>
+     <tt>explain -e </tt><i>num</i><tt> strerror</tt>
+</ul>
+
+<h2> <a name="3.5">3.5</a> Philosophy </h2>
+<a href="350-slide.html" >slide</a>
+
+<ul>
+<li> Tell me everything.
+<li> Including what I didn't know to look for (or <i>how</i> to look for)
+<li> Avoid modifying process (thread) state
+<li> Absolute paths if relative paths would be ambiguous
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,51 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2010 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 19, 21, 22, 24, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+.\" 35, 36, 37, 38, 39, 40, 41, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65,
+.\" 65, 66, 67, 68, 69
+Portability of the code has been improved.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 18
+The \f[I]explain\fP(3) man page now mentions AC_SYS_LARGEFILE in the
+building requirements.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 11, 13, 14, 48, 51, 53, 55
+Coverage now includes the
+\f[I]fprintf\fP(3),
+\f[I]printf\fP(3),
+\f[I]snprintf\fP(3),
+\f[I]sprintf\fP(3),
+\f[I]vfprintf\fP(3),
+\f[I]vprintf\fP(3),
+\f[I]vsnprintf\fP(3) and
+\f[I]vsprintf\fP(3)
+system calls.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.24 (2010\[hy]Mar\[hy]03)
+.\" vim: set ts=8 sw=4 et

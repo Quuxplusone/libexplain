@@ -1,0 +1,88 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008-2011 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_program_name
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_program_name 3
+.SH NAME
+explain_program_name \- manipulate the program name
+.if require_index \{
+.XX "explain_program_name(3)" "manipulate the program name"
+.\}
+.SH SYNOPSIS
+#include <libexplain/libexplain.h>
+.sp 0.3
+const char *explain_program_name_get(void);
+.br
+void explain_program_name_set(const char *name);
+.br
+void explain_program_name_assemble(int yesno);
+.SH DESCRIPTION
+These functions may be used to manipulate libexplain's idea of the
+command name of the current process, and whether or not that name is
+included in error messages.
+.SS explain_program_name_get
+const char *explain_program_name_get(void);
+.PP
+The \f[B]explain_program_name_get\fP function may be used to obtain
+the command name of the calling process.  Depending on how capable
+\f[CW]/proc\fP is on your system, or, failing that, how capable
+\f[I]lsof\fP(1) is on your system, this may or may not produce a
+sensible result.  It works well on Linux.
+.TP 8n
+Returns:
+pointer to string containing the command name (no slashes) of the
+calling process.
+.SS explain_program_name_set
+void explain_program_name_set(const char *name);
+.PP
+The \f[B]explain_program_name_set\fP function may be used
+to set the libexplain libraries' idea of the command name of
+the calling process, setting the string to be returned by the
+\f[I]explain_program_name_get\fP(3) function.  This overrides the
+automatic behavior, which can be quite desirable in commands that can
+be invoked with more than one name, \f[I]e.g.\fP if they are a hard link
+synonym.
+.PP
+This also sets the option to include the program name in all of the
+error messages issued by the \f[I]explain_*_or_die\fP(3) functions.
+.TP 8n
+\fIname\fP
+The name of the calling process.
+Only the basename will be used if a path containing slashes is given.
+.SS explain_program_name_assemble
+void explain_program_name_assemble(int yesno);
+.PP
+The explain_program_name_assemble function is used to control whether
+or not the name of the calling process is to be included in error
+messages issued by the \f[I]explain_*_or_die\fP(3) functions.
+If not explicitly set, is controlled by the EXPLAIN_OPTIONS
+environment variable, or defaults to true if not set there either.
+.TP 8n
+\fIyesno\fP
+non\[hy]zero (true) to have program name included,
+zero (false) to have program name excluded.
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2008 Peter Miller
+.SH AUTHOR
+Written by Peter Miller <pmiller@opensource.org.au>

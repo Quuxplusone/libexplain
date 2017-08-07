@@ -1,0 +1,11 @@
+Document: libexplain
+Title: Libexplain Manuals
+Author: Software Source Code Repository Owner
+Abstract: Libexplain Manuals
+Section: Programming
+
+Format: PDF
+Files: /usr/share/doc/libexplain/building.pdf*
+ /usr/share/doc/libexplain/new_system_call.pdf*
+ /usr/share/doc/libexplain/readme.pdf*
+ /usr/share/doc/libexplain/reference.pdf*

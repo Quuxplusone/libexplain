@@ -1,0 +1,77 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2009, 2010 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 60, 59, 58, 57, 56, 54, 52, 49, 48, 47, 46, 45, 44, 43, 42,
+.\" 41, 38, 35, 33, 19, 18, 14, 13
+Coverage now includes
+another 29 system calls:
+\f[I]accept4\fP(2),
+\f[I]acct\fP(2),
+\f[I]adjtime\fP(3),
+\f[I]adjtimex\fP(2),
+\f[I]chroot\fP(2),
+\f[I]dirfd\fP(3),
+\f[I]eventfd\fP(2),
+\f[I]fflush\fP(3),
+\f[I]fileno\fP(3),
+\f[I]flock\fP(2),
+\f[I]fstatfs\fP(2),
+\f[I]ftime\fP(3),
+\f[I]getgroups\fP(2),
+\f[I]gethostname\fP(2),
+\f[I]kill\fP(2),
+\f[I]nice\fP(2),
+\f[I]pread\fP(2),
+\f[I]pwrite\fP(2),
+\f[I]sethostname\fP(2),
+\f[I]signalfd\fP(2),
+\f[I]strdup\fP(3),
+\f[I]strtod\fP(3),
+\f[I]strtof\fP(3),
+\f[I]strtol\fP(3),
+\f[I]strtold\fP(3),
+\f[I]strtoll\fP(3),
+\f[I]strtoul\fP(3),
+\f[I]strtoull\fP(3), and
+\f[I]timerfd_create\fP(2).
+A total of 110 system calls are now supported
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 62
+The ./configure script no longer demands \f[I]lsof\fP(1).
+The Linux libexplain code doesn't need \f[I]lsof\fP(1).
+On systems not supported by \f[I]lsof\fP(1), the error messages aren't
+quite as useful, but libexplain still works.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 62
+.\" Change 37, 36, 29, 28, 27, 23, 21, 11
+There is now an \f[CW]explain_*_on_error\fP function for each system
+call, each reports errors but still returns the original return value to
+the caller.
+.\" ----------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.13 (2009\[hy]May\[hy]17)
+.\" vim: set ts=8 sw=4 et

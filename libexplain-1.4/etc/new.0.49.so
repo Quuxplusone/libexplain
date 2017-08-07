@@ -1,0 +1,57 @@
+.\"
+.\" libexplain - a library of system-call-specific strerror replacements
+.\" Copyright (C) 2011, 2012 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by the Free
+.\" Software Foundation; either version 3 of the License, or (at your option)
+.\" any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+.\" or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+.\" for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.PP
+.if n *
+.if t \(bu
+.\" Change 18, 20
+SpepS <spepsforge@users.sf.net> and Eric Smith <eric@brouhaha.com>
+discovered that _PC_MIN_HOLE_SIZE isn't supported for all Linux. Some
+more #ifdef was added.
+.PP
+.if n *
+.if t \(bu
+.\" Change 16, 11
+Several false negatives from tests have been fixed.
+.br
+Debian: Closes: 654199
+.PP
+.if n *
+.if t \(bu
+.\" Change 14
+The tarball now includes a libexplain.spec file for building an RPM
+package using \f[I]rpmbuild\fP(1).
+.PP
+.if n *
+.if t \(bu
+.\" Change 13
+This change set makes the exe(readlink) string search less
+particular, so that it works in more cases.
+In this instance, on Fedora 14.
+.PP
+.if n *
+.if t \(bu
+.\" Change 12
+Explanations are nowe available for errors reported by the
+\f[I]realpath\fP(3) system call.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.49 (2011\[hy]Nov\[hy]10)
+.\" vim: set ts=8 sw=4 et :

@@ -1,0 +1,50 @@
+#
+# libexplain - Explain errno values returned by libc functions
+# Copyright (C) 2013 Peter Miller
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 3 of the License, or (at your
+# option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+Include: linux/vt.h
+#
+# Requests that don't alter system state, device state or media state.
+# These are safe to probe, and will not cause probems or damage.
+Get:
+ VT_GETHIFONTMASK
+ VT_GETMODE
+ VT_GETSTATE
+#
+# These are requests that alter the system state.
+Set:
+ VT_ACKACQ
+ VT_ACTIVATE
+ VT_AUTO
+ VT_DISALLOCATE
+ VT_EVENT_BLANK
+ VT_EVENT_RESIZE
+ VT_EVENT_SWITCH
+ VT_EVENT_UNBLANK
+ VT_LOCKSWITCH
+ VT_MAX_EVENT
+ VT_OPENQRY
+ VT_PROCESS
+ VT_RELDISP
+ VT_RESIZE
+ VT_RESIZEX
+ VT_SENDSIG
+ VT_SETACTIVATE
+ VT_SETMODE
+ VT_UNLOCKSWITCH
+ VT_WAITACTIVE
+ VT_WAITEVENT
+# vim: set ts=8 sw=4 et :

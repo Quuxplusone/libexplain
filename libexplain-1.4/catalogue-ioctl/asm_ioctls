@@ -1,0 +1,96 @@
+#
+# libexplain - Explain errno values returned by libc functions
+# Copyright (C) 2009 Peter Miller
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 3 of the License, or (at your
+# option) any later version.
+#
+# This program is distributed in the hope that it will be useful,but
+# WITHOUT ANY WARRANTY; without even the implied warranty ofMERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE. See the GNULesser General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+Include: asm/ioctls.h
+#
+# Requests that don't alter system state, device state or media state.
+# These are safe to probe, and will not cause probems or damage.
+Get:
+ TCGETA
+ TCGETS
+ TCGETS2
+ TCGETX
+ TIOCGETD
+ TIOCGHAYESESP
+ TIOCGICOUNT
+ TIOCGLCKTRMIOS
+ TIOCGPGRP
+ TIOCGPTN
+ TIOCGRS485
+ TIOCGSERIAL
+ TIOCGSID
+ TIOCGSOFTCAR
+ TIOCGWINSZ
+ TIOCMGET
+#
+# These are requests that alter the system state.
+Set:
+ FIOASYNC
+ FIOCLEX
+ FIONBIO
+ FIONCLEX
+ FIONREAD
+ FIOQSIZE
+ TCFLSH
+ TCSBRK
+ TCSBRKP
+ TCSETA
+ TCSETAF
+ TCSETAW
+ TCSETS
+ TCSETS2
+ TCSETSF
+ TCSETSF2
+ TCSETSW
+ TCSETSW2
+ TCSETX
+ TCSETXF
+ TCSETXW
+ TCXONC
+ TIOCCBRK
+ TIOCCONS
+ TIOCEXCL
+ TIOCLINUX
+ TIOCMBIC
+ TIOCMBIS
+ TIOCMIWAIT
+ TIOCMSET
+ TIOCNOTTY
+ TIOCNXCL
+ TIOCOUTQ
+ TIOCPKT
+ TIOCSBRK
+ TIOCSCTTY
+ TIOCSERCONFIG
+ TIOCSERGETLSR
+ TIOCSERGETMULTI
+ TIOCSERGSTRUCT
+ TIOCSERGWILD
+ TIOCSERSETMULTI
+ TIOCSERSWILD
+ TIOCSER_TEMT
+ TIOCSETD
+ TIOCSHAYESESP
+ TIOCSLCKTRMIOS
+ TIOCSPGRP
+ TIOCSPTLCK
+ TIOCSRS485
+ TIOCSSERIAL
+ TIOCSSOFTCAR
+ TIOCSTI
+ TIOCSWINSZ
+ TIOCTTYGSTRUCT

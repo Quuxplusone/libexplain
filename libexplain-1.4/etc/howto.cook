@@ -1,0 +1,938 @@
+/*
+ * libexplain - Explain errno values returned by libc functions
+ * Copyright (C) 2008-2014 Peter Miller
+ * Written by Peter Miller <pmiller@opensource.org.au>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * It is assumed that the following variables are assigned on the command line:
+ *
+ * project      The name of the Aegis project.
+ * change       The number of the Aegis change.
+ * version      The version of this change
+ * search_path  The search path from the development directory back into
+ *              the baseline, colon separated.
+ */
+
+#include "functions"
+
+default_target: all
+    set default;
+
+/*
+ * always remove targets before recreating them
+ */
+set unlink;
+
+/*
+ * always create directories for targets if they don't yet exist.
+ */
+set mkdir;
+
+/*
+ * Make sure time mod-time of targets is consistent with the ingredients.
+ * (During integration builds, adjust back agressively.)
+ */
+set time-adjust;
+if [match_mask %1D%2 [version]] then
+    set time-adjust-back;
+
+/*
+ * Use file fingerprints to supplement file-modified times.
+ */
+set fingerprint;
+
+/* -------------------------------------------------------------------------
+ *
+ * By default, the build issues one-line summaries for each recipe.
+ * If you want all the gorey details, add verbose=1 to the aeb command line.
+ */
+if [not [defined verbose]] then
+{
+    /* or for brevity, put V=1 on the command line */
+    if [defined V] then
+        verbose = [V];
+    else
+        verbose = 0;
+}
+quiet = [not [verbose]];
+
+function quiet_print =
+{
+   if [quiet] then
+        function print /*[@1]*/ [target];
+    else if [in [count [younger]] 0] then
+        function print Building [target] because it "doesn't" exist yet;
+    else if [in [count [younger]] 0 1 2 3] then
+        function print Building [target] because of [younger];
+    else
+        function print Building [target] because of [wordlist 1 3 [younger]]...;
+}
+
+libtool-quiet = ;
+if [quiet] then
+{
+    libtool-quiet = --quiet;
+    set silent no-star;
+}
+else
+{
+    libtool-quiet = ;
+    set no-silent tell-position star;
+}
+
+/* -------------------------------------------------------------------------
+ *
+ * determine the short version:
+ * no change or delta number
+ */
+version_short = [fromto %1.C%2 %1 [subst D C [version]]];
+
+version_shorter = [split "." [version_short]] _ _;
+version_shorter =
+    [unsplit "." [word 1 [version_shorter]]
+                 [word 2 [version_shorter]]];
+project_short = [fromto %.[version_short] % [project]];
+/* project_minus = [project_short]-[version_short]; */
+project_minus = [project_short]-[version];
+
+/* -------------------------------------------------------------------------
+ * Section: Search path
+ *
+ * The aegis search path (colon separated) is turned into a cook
+ * search_list (separate words).
+ */
+
+search_list = .;
+search_tmp = [tail [split ':' [search_path]]];
+search_name = bl;
+loop
+{
+    search_dir = [head [search_tmp]];
+    if [not [search_dir]] then
+        loopstop;
+    search_tmp = [tail [search_tmp]];
+
+    if [not [exists [search_name]]] then
+        ln -s [search_dir] [search_name]
+            set clearstat;
+    search_list = [search_list] [search_name];
+    search_name = [search_name]bl;
+}
+
+#include-cooked etc/apt-get-depends.cook
+
+/* -------------------------------------------------------------------------
+ * Section: Utilities
+ *
+ * The include files in the lib/ directory define the interface between
+ * the lib/ contents and the programs.
+ */
+
+CPPFLAGS = [addprefix "-I" [search_list]];
+CC = gcc -pipe;
+CFLAGS = -Wall -Wextra
+    -Wformat\=2
+    -Wswitch-default
+    -Wswitch-enum
+    -Wdeclaration-after-statement
+    -Wshadow
+    -Wpointer-arith
+    -Wwrite-strings
+    -Wstrict-prototypes
+    -Wold-style-definition
+    -Wmissing-prototypes
+    -Wmissing-declarations
+    -Wnested-externs
+    -Wuninitialized
+    -g
+    -O2
+    ;
+if [matches %1C%2 [version]] then
+    CFLAGS += -Werror --pipe;
+LDFLAGS = -Wl,--as-needed;
+LIBS = -lcap -ldl -lm;
+
+#include-cooked etc/howto.conf
+
+/* -------------------------------------------------------------------------
+ * Section: Compile Flags
+ *
+ * If you need to add specific options for a particular .c file,
+ * use the full name of the file, with a _CFLAGS suffix.
+ * (See the C recipe, below, for how this is referenced.)
+ */
+/* libexplain/version.c_CFLAGS = "-D'VERSION=\""[version]"\"'"; */
+
+/*
+ * If you need to add specific options for a particular .c file,
+ * use the full name of the file, with a _CFLAGS suffix.
+ * (See the C recipe, below, for how this is referenced.)
+ */
+/* lib/name2_CFLAGS = -DEXTRA_STUFF; */
+
+/* -------------------------------------------------------------------------
+ * Section: Primary Source Files
+ *
+ * Ask Aegis for the manifest of primary source files.
+ * It is almost *never* a good idea to alter this section in any way.
+ * If you are not an experiences Aegis user, do not edit this section.
+ */
+
+project_files = [collect aegis -l pf -p [project] -c [change] -terse];
+change_files = [shell aegis -l cf -p [project] -c [change] -terse];
+source_files = [sort [project_files] [change_files]];
+
+/* -------------------------------------------------------------------------
+ * Section: Libraries
+ *
+ * For each library, construct the object list for that library.
+ *
+ * The relevant portion of the directory structure looks like this
+ *
+ *    lib<name>/
+ *        lib<name>.a
+ *        source.file1.c
+ *        source.file2.c
+ *        ...
+ *
+ * This list of libraries is determined automatically from the source files,
+ * and the archiove contents generated automatically for each one.
+ */
+
+libraries =
+    [stringset /* remove duplicates */
+        [patsubst lib%1/%0% %1 [filter lib%1/%0% [source_files]]]
+    ];
+
+loop lib = [libraries]
+{
+    lib[lib]/lib[lib].la_obj =
+        [patsubst %0%.c %0%.lo      [filter lib[lib]/%0%.c [source_files]]]
+        [patsubst %0%.y %0%.yacc.lo [filter lib[lib]/%0%.y [source_files]]]
+        [patsubst %0%.l %0%.lex.lo  [filter lib[lib]/%0%.l [source_files]]]
+        ;
+}
+
+/*
+ * We can use a single pattern recipe to cook all of the libraries.
+ */
+
+lib%/lib%.la lib%/.libs/lib%.a lib%/.libs/lib%.so:
+        [[target]_obj]
+    set unlink ingredients-fingerprint
+{
+    function quiet_print Link;
+
+    /*
+     * We include the "hidden" libtool output files because we need to
+     * fingerprint something that actually changes, and the .la file is
+     * pretty much static.
+     */
+    local version-info =
+        [collect aesub "'${project_specific aemakegen:version-info}'" ];
+    libtool [libtool-quiet] --mode\=link --tag\=BINCC
+    [CC] [CPPFLAGS] [CFLAGS]
+        -o [target]
+        [resolve [[target]_obj]]
+        [LIBS]
+        -version-info [version-info]
+
+        /*
+         * If you don't specify -rpath it doesn't make the shared
+         * library, even though the Debian people Really Don't Like
+         * Rpath.  We really really want the .so so we can check the
+         * version-info using the aede-policy "soname".
+         */
+        -rpath /usr/local/bin
+        ;
+}
+
+/* -------------------------------------------------------------------------
+ * Section: Programs
+ *
+ * For each program, construct the object list for that program.
+ * Because Make only had macros, not a full 3GL, you have to enumerate
+ * each one explicitly.
+ *
+ * The relevant portion of the directory structure looks like this
+ *
+ *    progA/
+ *        source.file.c ...
+ *    progB/
+ *        source.file.c ...
+ *    bin/
+ *        progA
+ *        progB
+ *
+ * The list of programs is determinted automatically from the sourec files,
+ * and the list of objects for each one.
+ */
+
+programs =
+    [stringset /* remove duplicates */
+        [patsubst %0%/main.c %0% [filter %0%/main.c [source_files]]]
+    ];
+
+function prog-var-from-prog-path =
+{
+    local prog = [@1];
+    local prog_var =;
+    if [in [substr 1 5 [prog] ] "test/"] then
+        prog_var = [subst "/" "_" [prog]];
+    else
+        prog_var = [subst "/" "-" [prog]];
+    return [prog_var];
+}
+
+loop prog = [programs]
+{
+    prog_var = [prog-var-from-prog-path [prog]];
+    bin/[prog_var]_obj =
+        [patsubst %0%.c      %0%.o [filter [prog]/%0%.c [source_files]]]
+        [patsubst %0%.y %0%.yacc.o [filter [prog]/%0%.y [source_files]]]
+        [patsubst %0%.l  %0%.lex.o [filter [prog]/%0%.l [source_files]]]
+        ;
+    bin/[prog_var]_libs = libexplain/libexplain.la;
+}
+
+/*
+ * We can use a single pattern recipe to make all of the programs.
+ */
+
+bin/% bin/.libs/%: [[target]_obj] [defined-or-null [target]_libs]
+        [fromto %%0%%.la %%0.libs/%%.a  [defined-or-null [target]_libs]]
+        [fromto %%0%%.la %%0.libs/%%.so [defined-or-null [target]_libs]]
+    set gate-first shallow /* tests need them */
+    if [defined [target]_obj]
+{
+    function quiet_print Link;
+
+    rm -f bin/.libs/lt-%;
+    libtool [libtool-quiet] --mode\=link --tag\=BINCC
+    [CC] -o [target]
+        [LDFLAGS]
+        [resolve [[target]_obj] [defined-or-null [target]_libs]]
+        [LIBS]
+        ;
+
+    /*
+     * Libtool makes intermediate shell scripts.
+     * Make sure the fingerprint changes when it rebuilds,
+     * otherwise some tests get confused.
+     */
+    date "'+# %%c'" >> [target]
+        set silent;
+
+    /*
+     * libtool creates bin/% as a script, which, when executed, does the
+     * actual link.  But this link puts its results in bin/.libs, and
+     * that directory will not be writable for executables sourced from
+     * the baseline.  So we goose it into linking now, which would seem
+     * to defeat the purpose.
+     */
+    [target] -V > /dev/null 2>&1;
+}
+
+/* --------------------------------------------------------------------------
+ * Section: What to make
+ *
+ * The "all" targets are each of the commands.
+ */
+
+all = ;
+all: [all];
+
+loop prog = [programs]
+{
+    prog_var = [prog-var-from-prog-path [prog]];
+    all += bin/[prog_var];
+}
+
+integration-build-targets = web-site/[project_minus].ae;
+integration-build-targets: [integration-build-targets];
+
+if [match_mask %1D%2 [version]] then
+    all += integration-build-targets;
+
+/* --------------------------------------------------------------------------
+ * Section: Compiling C Source Files
+ */
+
+#if 0
+%0%.o: %0%.c
+{
+    function quiet_print Compile;
+
+    rm -f %0.libs/%.o %0.libs/%.lo;
+    libtool [libtool-quiet] --mode\=compile --tag\=BINCC
+    [CC]
+        [stringset [CFLAGS] - -Wl,--as-needed]
+        [defined-or-null %0%.c_CFLAGS]
+        [defined-or-null [dir %0%.c]_CFLAGS]
+        [CPPFLAGS]
+        -c [resolve %0%.c]
+        -o [target];
+}
+#endif
+
+cascade %0%.lo = %0%.o %0.libs/%.lo;
+
+%0%.lo %0%.o %0.libs/%.o: %0%.c libexplain/config.h
+{
+    function quiet_print Compile;
+
+    rm -f %0%.lo %0.libs/%.o %0.libs/%.lo;
+    libtool [libtool-quiet] --mode\=compile --tag\=BINCC
+    [CC]
+        [stringset [CFLAGS] - -Wl,--as-needed]
+        [defined-or-null %0%.c_CFLAGS]
+        [defined-or-null [dir %0%.c]_CFLAGS]
+        [CPPFLAGS]
+        ['if' [matches %%.yacc.cc %.cc] 'then' -Wno-switch-default ]
+        -c [resolve %0%.c]
+        -o [target];
+    md5sum %0%.o %0.libs/%.o | sed "'s|^|# |'" >> [target];
+}
+
+/* force this one to be shallow */
+if [not [exists libexplain/version.lo]] then
+    libexplain/version.lo: .;
+
+/* --------------------------------------------------------------------------
+ * Section: Maintaining C Include Dependencies
+ *
+ * How to manage C include dependencies, straight out of the Cook manual.
+ */
+
+/*
+ * There is a special list of files you must use, in preference to the
+ * standard C files.  This ensures appropriate operating system insulation
+ * is always in place.
+ */
+c_incl_excludes =
+    [fromto libexplain/ac/%0%.h -ex\=%0%.h
+        [match_mask libexplain/ac/%0%.h [source_files]]
+    ]
+
+    /*
+     * This file is only to be used by users if this library, not the
+     * library itself.
+     */
+    -ex\=libexplain/libexplain.h
+    ;
+
+/*
+ * the above list has some excpetions for the user API
+ */
+
+dirent_exceptions =
+    libexplain/closedir.h
+    libexplain/dirfd.h
+    libexplain/fdopendir.h
+    libexplain/opendir.h
+    libexplain/readdir.h
+    libexplain/rewinddir.h
+    libexplain/scandir.h
+    libexplain/seekdir.h
+    libexplain/telldir.h
+    ;
+
+iconv_exceptions =
+    libexplain/iconv_open.h
+    libexplain/iconv.h
+    libexplain/iconv_close.h
+    ;
+
+signal_exceptions =
+    libexplain/signalfd.h
+    ;
+
+stdarg_exceptions =
+    libexplain/vfprintf.h
+    libexplain/vprintf.h
+    libexplain/vsnprintf.h
+    libexplain/vsprintf.h
+    libexplain/vasprintf.h
+    ;
+
+stdio_exceptions =
+    libexplain/asprintf.h
+    libexplain/fclose.h
+    libexplain/fdopen.h
+    libexplain/feof.h
+    libexplain/ferror.h
+    libexplain/fflush.h
+    libexplain/fgetc.h
+    libexplain/fgetpos.h
+    libexplain/fgets.h
+    libexplain/filename.h
+    libexplain/fileno.h
+    libexplain/fopen.h
+    libexplain/fprintf.h
+    libexplain/fpurge.h
+    libexplain/fputc.h
+    libexplain/fputs.h
+    libexplain/fread.h
+    libexplain/freopen.h
+    libexplain/fscanf.h
+    libexplain/fseek.h
+    libexplain/fseeko.h
+    libexplain/fsetpos.h
+    libexplain/ftell.h
+    libexplain/ftello.h
+    libexplain/fwrite.h
+    libexplain/fwrite.h
+    libexplain/getc.h
+    libexplain/getchar.h
+    libexplain/gets.h
+    libexplain/getw.h
+    libexplain/pclose.h
+    libexplain/popen.h
+    libexplain/printf.h
+    libexplain/putc.h
+    libexplain/putchar.h
+    libexplain/puts.h
+    libexplain/putw.h
+    libexplain/rewind.h
+    libexplain/scanf.h
+    libexplain/setbuf.h
+    libexplain/setbuffer.h
+    libexplain/setlinebuf.h
+    libexplain/setvbuf.h
+    libexplain/snprintf.h
+    libexplain/sprintf.h
+    libexplain/tmpfile.h
+    libexplain/ungetc.h
+    libexplain/vfprintf.h
+    libexplain/vfscanf.h
+    libexplain/vprintf.h
+    libexplain/vscanf.h
+    libexplain/vsnprintf.h
+    libexplain/vsprintf.h
+    ;
+
+stdlib_exceptions =
+    cat/main.c
+    libexplain/malloc.h
+    libexplain/realloc.h
+    test_mincore/main.c
+    ;
+
+string_exceptions =
+    libexplain/strndup.h
+    test_mincore/main.c
+    ;
+
+sys/acl_exceptions =
+    libexplain/acl_from_text.h
+    libexplain/acl_get_fd.h
+    libexplain/acl_get_file.h
+    libexplain/acl_set_fd.h
+    libexplain/acl_set_file.h
+    libexplain/acl_to_text.h
+    ;
+
+sys/select_exceptions =
+    libexplain/select.h
+    ;
+
+sys/mman_exceptions =
+    test_mincore/main.c
+    libexplain/mmap.h
+    libexplain/munmap.h
+    ;
+
+sys/socket_exceptions =
+    libexplain/accept.h
+    libexplain/accept4.h
+    libexplain/getpeername.h
+    libexplain/getsockname.h
+    libexplain/getsockopt.h
+    libexplain/setsockopt.h
+    ;
+
+sys/stat_exceptions =
+    libexplain/fchmod.h
+    libexplain/lchmod.h
+    ;
+
+sys/timeb_exceptions =
+    libexplain/ftime.h
+    ;
+
+sys/types_exceptions =
+    libexplain/fseeko.h
+    libexplain/ftello.h
+    libexplain/kill.h
+    libexplain/mknod.h
+    libexplain/ustat.h
+    libexplain/vfork.h
+    libexplain/getgrouplist.h
+    ;
+
+sys/uio_exceptions =
+    libexplain/readv.h
+    libexplain/writev.h
+    ;
+
+time_exceptions =
+    libexplain/ftime.h
+    libexplain/stime.h
+    libexplain/time.h
+    ;
+
+unistd_exceptions =
+    cat/main.c
+    libexplain/fchownat.h
+    libexplain/ftruncate.h
+    libexplain/getcwd.h
+    libexplain/getdomainname.h
+    libexplain/getgroups.h
+    libexplain/gethostname.h
+    libexplain/getpgid.h
+    libexplain/getpgrp.h
+    libexplain/getresgid.h
+    libexplain/getresuid.h
+    libexplain/lseek.h
+    libexplain/pread.h
+    libexplain/pwrite.h
+    libexplain/read.h
+    libexplain/readlink.h
+    libexplain/setdomainname.h
+    libexplain/setgroups.h
+    libexplain/sethostname.h
+    libexplain/setpgid.h
+    libexplain/setpgrp.h
+    libexplain/setregid.h
+    libexplain/setresgid.h
+    libexplain/setresuid.h
+    libexplain/setreuid.h
+    libexplain/truncate.h
+    libexplain/vfork.h
+    libexplain/write.h
+    test_mincore/main.c
+    ;
+
+ustat_exceptions =
+    libexplain/ustat.h
+    ;
+
+/*
+ * This file is only to be used by users if this library, not the
+ * library itself.  The source files listed here must be example sources
+ * ONLY... but they get compiled so we know we haven't broken anything.
+ */
+libexplain/libexplain_exceptions =
+    cat/main.c
+    ;
+
+%0%.c.d: %0%.c
+    set no-cascade
+{
+    function quiet_print Depends;
+
+    /*
+     * Generated files may use excluded headers, because we
+     * have no control over the quality of generated code.
+     */
+    local ex = ;
+    if [not [match %%.yacc %]] then
+    {
+        if [not [filter libexplain/ac/%%0%% %0%.c]] then
+            ex = [c_incl_excludes];
+        if [in %0%.c [libexplain/libexplain_exceptions]] then
+            ex = [stringset [ex] - "-ex=libexplain/libexplain.h"];
+        if [in %0%.c [dirent_exceptions]] then
+            ex = [stringset [ex] - "-ex=dirent.h"];
+        if [in %0%.c [iconv_exceptions]] then
+            ex = [stringset [ex] - "-ex=iconv.h"];
+        if [in %0%.c [signal_exceptions]] then
+            ex = [stringset [ex] - "-ex=signal.h"];
+        if [in %0%.c [stdarg_exceptions]] then
+            ex = [stringset [ex] - "-ex=stdarg.h"];
+        if [in %0%.c [stdio_exceptions]] then
+            ex = [stringset [ex] - "-ex=stdio.h"];
+        if [in %0%.c [stdlib_exceptions]] then
+            ex = [stringset [ex] - "-ex=stdlib.h"];
+        if [in %0%.c [string_exceptions]] then
+            ex = [stringset [ex] - "-ex=string.h"];
+        if [in %0%.c [sys/acl_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/acl.h"];
+        if [in %0%.c [sys/mman_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/mman.h"];
+        if [in %0%.c [sys/select_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/select.h"];
+        if [in %0%.c [sys/stat_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/stat.h"];
+        if [in %0%.c [sys/timeb_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/timeb.h"];
+        if [in %0%.c [sys/types_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/types.h"];
+        if [in %0%.c [sys/uio_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/uio.h"];
+        if [in %0%.c [time_exceptions]] then
+            ex = [stringset [ex] - "-ex=time.h"];
+        if [in %0%.c [unistd_exceptions]] then
+            ex = [stringset [ex] - "-ex=unistd.h"];
+        if [in %0%.c [ustat_exceptions]] then
+            ex = [stringset [ex] - "-ex=ustat.h"];
+    }
+
+    c_incl -nc -ns -eia -nrec
+        -nsri /* essential for Aegis development */
+        [filter -I%%0%% [CPPFLAGS]]
+        -prefix "'cascade %0%.c ='"
+        -suffix "';'"
+        [resolve %0%.c]
+        [addprefix -rlp\= [search_list]]
+        [ex]
+        -o [target];
+}
+
+#include-cooked-nowarn [addsuffix ".d" [filter %0%.c [source_files]]]
+
+%0%.h.d: %0%.h: libexplain/config.h
+    set no-cascade
+{
+    function quiet_print Depends;
+
+    /*
+     * Generated files may use excluded headers, because we
+     * have no control over the quality of generated code.
+     */
+    local ex = ;
+    if [not [match %%.yacc %]] then
+    {
+        if [not [filter libexplain/ac/%%0%% %0%.c]] then
+            ex = [c_incl_excludes];
+        if [in %0%.c [libexplain/libexplain_exceptions]] then
+            ex = [stringset [ex] - "-ex=libexplain/libexplain.h"];
+        if [in %0%.h [dirent_exceptions]] then
+            ex = [stringset [ex] - "-ex=dirent.h"];
+        if [in %0%.h [iconv_exceptions]] then
+            ex = [stringset [ex] - "-ex=iconv.h"];
+        if [in %0%.h [signal_exceptions]] then
+            ex = [stringset [ex] - "-ex=signal.h"];
+        if [in %0%.h [stdarg_exceptions]] then
+            ex = [stringset [ex] - "-ex=stdarg.h"];
+        if [in %0%.h [stdio_exceptions]] then
+            ex = [stringset [ex] - "-ex=stdio.h"];
+        if [in %0%.h [stdlib_exceptions]] then
+            ex = [stringset [ex] - "-ex=stdlib.h"];
+        if [in %0%.h [string_exceptions]] then
+            ex = [stringset [ex] - "-ex=string.h"];
+        if [in %0%.h [sys/acl_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/acl.h"];
+        if [in %0%.h [sys/mman_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/mman.h"];
+        if [in %0%.h [sys/select_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/select.h"];
+        if [in %0%.h [sys/socket_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/socket.h"];
+        if [in %0%.h [sys/stat_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/stat.h"];
+        if [in %0%.h [sys/timeb_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/timeb.h"];
+        if [in %0%.h [sys/types_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/types.h"];
+        if [in %0%.h [sys/uio_exceptions]] then
+            ex = [stringset [ex] - "-ex=sys/uio.h"];
+        if [in %0%.h [time_exceptions]] then
+            ex = [stringset [ex] - "-ex=time.h"];
+        if [in %0%.h [unistd_exceptions]] then
+            ex = [stringset [ex] - "-ex=unistd.h"];
+        if [in %0%.h [ustat_exceptions]] then
+            ex = [stringset [ex] - "-ex=ustat.h"];
+    }
+
+    c_incl -nc -ns -eia -nrec
+        -nsri /* essential for Aegis development */
+        [filter -I%%0%% [CPPFLAGS]]
+        -prefix "'cascade %0%.h ='"
+        -suffix "';'"
+        [resolve %0%.h]
+        [addprefix -rlp\= [search_list]]
+        [ex]
+        -o [target];
+}
+
+#include-cooked-nowarn [addsuffix ".d" [filter %0%.h [source_files]]]
+
+/*
+ * If the relationship between a target and a derived ingredient
+ * appears only in a derived cookbook, it is likely that a clean build
+ * (solely from primary source files) will fail.  It is recommended that
+ * relationships such as this be placed in a primary source cookbook.
+ */
+
+cascade libexplain/ac/%0%.h = libexplain/config.h;
+cascade libexplain/bits/sigset_t.h = libexplain/public_config.h;
+cascade libexplain/large_file_support.h = libexplain/public_config.h;
+cascade libexplain/libexplain.h = libexplain/public_config.h;
+
+/* --------------------------------------------------------------------------
+ * Section: Using Yacc Source Files
+ *
+ * How to have yacc read .y files and generate .yacc.c and .yacc.h files.
+ * This section allows you to have more than one yacc file in a program
+ * (or library) by editing the generated "yy" identifiers into something
+ * more unique.
+ */
+
+/* yacc = yacc; */
+yacc = bison -y;
+yacc_flags = -v;
+
+/* LIBS += -ly; */
+
+%0%.yacc.c %0%.yacc.h: %0%.y
+    single-thread y.tab.c y.tab.h
+{
+    function quiet_print Yacc;
+
+    local name = [substitute / _ %0%_];
+    [yacc] -d [yacc_flags] [resolve %0%.y];
+    sed -e "'s|[yY][yY]|"[name]"|g'" y.tab.c > %0%.yacc.c;
+    sed -e "'s|[yY][yY]|"[name]"|g'" y.tab.h > %0%.yacc.h;
+    if [exists y.output] then
+        mv y.output %0%.yacc.list;
+    rm y.tab.c y.tab.h;
+}
+
+yacc_d_files =
+    [patsubst %0%.y %0%.yacc.c.d [filter %0%.y [source_files]]]
+    [patsubst %0%.y %0%.yacc.h.d [filter %0%.y [source_files]]]
+    ;;
+#include-cooked-nowarn [yacc_d_files]
+
+/* --------------------------------------------------------------------------
+ * Section: Change Set
+ */
+
+web-site/[project_minus].ae: [source_files]
+{
+    function quiet_print Generate;
+
+    aedist --send --entire-source -p [project] -c [change] -ndh -naa
+        -o [target];
+}
+
+/* --------------------------------------------------------------------------
+ * Section: scripts
+ *
+ * see etc/autoconf.cook for how the scripts are cooked
+ */
+
+scripts = [fromto script/%.sh.in % [match_mask script/%.sh.in [source_files]]];
+
+all += [addprefix bin/ [scripts]];
+
+
+/* ----------------------------------------------------------------------
+ * Checking for ioctl number conflicts
+ */
+all = .explain-iocontrol-check-conflicts [all];
+
+.explain-iocontrol-check-conflicts: bin/explain
+{
+    function quiet_print Check;
+
+    [resolve bin/explain] -Z;
+    date > [target]
+        set silent;
+}
+
+all += .explain-iocontrol-check-types;
+
+.explain-iocontrol-check-types: etc/check_ioctl_data_type.awk
+    [match_mask "libexplain/iocontrol/%.c" [source_files]]
+{
+    function quiet_print Check;
+
+    awk -f [resolve etc/check_ioctl_data_type.awk]
+        [resolve [match_mask "libexplain/iocontrol/%.c" [source_files]]]
+        ;
+    date > [target]
+        set silent;
+}
+
+all += .include.gotchas;
+
+.include.gotchas: bin/test_include_gotchas [source_files]
+{
+    function quiet_print Check;
+
+    [resolve bin/test_include_gotchas] -F- [filter -I%0% [CPPFLAGS]] ;
+data
+[unsplit "\n"
+    [match_mask %0%.h [source_files]]
+    [match_mask %0%.c [source_files]]
+]
+dataend
+    date > [target]
+        set silent;
+}
+
+/* ---------------------------------------------------------------------- */
+
+libexplain/v4l2-chip-ident.h : etc/v4l2-chip-ident.sh
+{
+    function quiet_print Generate;
+
+    sh [resolve etc/v4l2-chip-ident.sh] > [target];
+}
+
+cascade libexplain/buffer/v4l2_chip_ident.c = libexplain/v4l2-chip-ident.h;
+
+/* ----------------------------------------------------------------------
+ * Some stuff to make tests easier to make conditional.
+ */
+
+test_config/configured.h: etc/configured.awk libexplain/config.h.in
+{
+    function quiet_print Generate;
+
+    awk -f [resolve etc/configured.awk libexplain/config.h.in] > [target];
+}
+
+cascade test_config/main.c = test_config/configured.h;
+
+/* ---------------------------------------------------------------------- */
+
+all += .test.checker;
+
+.test.checker: bin/test_checker
+    [match_mask test/%1/t%2.sh [source_files]]
+{
+    function quiet_print Check;
+
+    [resolve bin/test_checker]
+        [resolve [match_mask test/%1/t%2.sh [source_files]]]
+        ;
+    date > [target];
+}
+
+/* ---------------------------------------------------------------------- */
+#include-cooked etc/autoconf.cook
+#include-cooked etc/doxygen.cook
+#include-cooked etc/makefile.cook
+#include-cooked etc/tags.cook
+#include-cooked etc/metrics.cook
+#include-cooked etc/documentation.cook
+#include-cooked etc/i18n.cook
+#include-cooked web-src/module.cook
+
+/* vim: set ts=8 sw=4 et : */

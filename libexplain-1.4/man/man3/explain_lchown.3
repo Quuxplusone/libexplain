@@ -1,0 +1,267 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008, 2009, 2011 Peter Miller
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or (at
+.\" your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_lchown
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_lchown 3
+.SH NAME
+explain_lchown \- explain lchown(2) errors
+.if require_index \{
+.XX "explain_lchown(3)" "explain lchown(2) errors"
+.\}
+.SH SYNOPSIS
+#include <libexplain/lchown.h>
+.sp 0.3
+const char *explain_lchown(const char *pathname, int owner, int group);
+.br
+const char *explain_errno_lchown(int errnum, const char *pathname, int owner,
+int group);
+.br
+void explain_message_lchown(char *message, int message_size,
+const char *pathname, int owner, int group);
+.br
+void explain_message_errno_lchown(char *message, int message_size,
+int errnum, const char *pathname, int owner, int group);
+.SH DESCRIPTION
+These functions may be used to obtain explanations for
+errors returned by the \f[I]lchown\fP(2) system call.
+.\" ----------------------------------------------------
+.SS explain_lchown
+const char *explain_lchown(const char *pathname, int owner, int group);
+.PP
+The \f[B]explain_lchown\fP function is
+used to obtain an explanation of an error returned by the \f[I]lchown\fP(2)
+system call.  The least the message will contain is the
+value of \f[CW]strerror(errno)\fP, but usually it will
+do much better, and indicate the underlying cause in more
+detail.
+.PP
+The \f[I]errno\fP global variable will be used to obtain
+the error value to be decoded.
+.PP
+This function is intended to be used in a fashion
+similar to the following example:
+.RS
+.ft CW
+.nf
+if (lchown(pathname, owner, group) < 0)
+{
+    fprintf(stderr, "%s\en", explain_lchown(pathname, owner, group));
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]pathname\fP
+The original pathname, exactly as passed to the \f[I]lchown\fP(2) system call.
+.TP 8n
+\f[I]owner\fP
+The original owner, exactly as passed to the \f[I]lchown\fP(2) system call.
+.TP 8n
+\f[I]group\fP
+The original group, exactly as passed to the \f[I]lchown\fP(2) system call.
+.TP 8n
+Returns:
+The message explaining the error.  This message buffer is
+shared by all libexplain functions which do not supply a
+buffer in their argument list.  This will be overwritten
+by the next call to any libexplain function which shares
+this buffer, including other threads.
+.PP
+\f[B]Note:\fP
+This function is \f[B]not\fP thread safe, because it
+shares a return buffer across all threads, and many other
+functions in this library.
+.\" ----------------------------------------------------
+.SS explain_errno_lchown
+const char *explain_errno_lchown(int errnum, const char *pathname, int owner,
+int group);
+.PP
+The \f[B]explain_errno_lchown\fP function
+is used to obtain an explanation of an error returned by
+the \f[I]lchown\fP(2) system call.
+The least the message will contain is the value of
+\f[CW]strerror(errnum)\fP, but usually it will do much
+better, and indicate the underlying cause in more detail.
+.PP
+This function is intended to be used in a fashion
+similar to the following example:
+.RS
+.ft CW
+.nf
+if (lchown(pathname, owner, group) < 0)
+{
+    int err = errno;
+    fprintf(stderr, "%s\en", explain_errno_lchown(err,
+        pathname, owner, group));
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]errnum\fP
+The error value to be decoded, usually obtained from
+the \f[I]errno\fP global variable just before this
+function is called.  This is necessary if you need to call
+\f[B]any\fP code between the system call to be explained
+and this function, because many libc functions will alter
+the value of \f[I]errno\fP.
+.TP 8n
+\f[I]pathname\fP
+The original pathname, exactly as passed to the \f[I]lchown\fP(2) system call.
+.TP 8n
+\f[I]owner\fP
+The original owner, exactly as passed to the \f[I]lchown\fP(2) system call.
+.TP 8n
+\f[I]group\fP
+The original group, exactly as passed to the \f[I]lchown\fP(2) system call.
+.TP 8n
+Returns:
+The message explaining the error.  This message buffer is
+shared by all libexplain functions which do not supply a
+buffer in their argument list.  This will be overwritten
+by the next call to any libexplain function which shares
+this buffer, including other threads.
+.PP
+\f[B]Note:\fP
+This function is \f[B]not\fP thread safe, because it
+shares a return buffer across all threads, and many other
+functions in this library.
+.\" ----------------------------------------------------
+.SS explain_message_lchown
+void explain_message_lchown(char *message, int message_size,
+const char *pathname, int owner, int group);
+.PP
+The \f[B]explain_message_lchown\fP
+function may be used to  obtain an explanation of an error
+returned by the
+\f[I]lchown\fP(2) system call.
+The least the message will contain is the value of
+\f[CW]strerror(errno)\fP, but usually it will do much
+better, and indicate the underlying cause in more detail.
+.PP
+The \f[I]errno\fP global variable will be used to obtain
+the error value to be decoded.
+.PP
+This function is intended to be used in a fashion
+similar to the following example:
+.RS
+.ft CW
+.nf
+if (lchown(pathname, owner, group) < 0)
+{
+    char message[3000];
+    explain_message_lchown(message, sizeof(message),
+        pathname, owner, group);
+    fprintf(stderr, "%s\en", message);
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]message\fP
+The location in which to store the returned message.
+If a suitable message return buffer is supplied, this
+function is thread safe.
+.TP 8n
+\f[I]message_size\fP
+The size in bytes of the location in which to
+store the returned message.
+.TP 8n
+\f[I]pathname\fP
+The original pathname, exactly as passed to the \f[I]lchown\fP(2) system call.
+.TP 8n
+\f[I]owner\fP
+The original owner, exactly as passed to the \f[I]lchown\fP(2) system call.
+.TP 8n
+\f[I]group\fP
+The original group, exactly as passed to the \f[I]lchown\fP(2) system call.
+.\" ----------------------------------------------------
+.SS explain_message_errno_lchown
+void explain_message_errno_lchown(char *message, int message_size,
+int errnum, const char *pathname, int owner, int group);
+.PP
+The \f[B]explain_message_errno_lchown\fP
+function may be used to obtain an explanation of an error
+returned by the
+\f[I]lchown\fP(2) system call.
+The least the message will contain is the value of
+\f[CW]strerror(errnum)\fP, but usually it will do much
+better, and indicate the underlying cause in more detail.
+.PP
+This function is intended to be used in a fashion
+similar to the following example:
+.RS
+.ft CW
+.nf
+if (lchown(pathname, owner, group) < 0)
+{
+    int err = errno;
+    char message[3000];
+    explain_message_errno_lchown(message, sizeof(message), err,
+        pathname, owner, group);
+    fprintf(stderr, "%s\en", message);
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]message\fP
+The location in which to store the returned message.
+If a suitable message return buffer is supplied, this
+function is thread safe.
+.TP 8n
+\f[I]message_size\fP
+The size in bytes of the location in which to
+store the returned message.
+.TP 8n
+\f[I]errnum\fP
+The error value to be decoded, usually obtained from
+the \f[I]errno\fP global variable just before this
+function is called.  This is necessary if you need to call
+\f[B]any\fP code between the system call to be explained
+and this function, because many libc functions will alter
+the value of \f[I]errno\fP.
+.TP 8n
+\f[I]pathname\fP
+The original pathname, exactly as passed to the \f[I]lchown\fP(2) system call.
+.TP 8n
+\f[I]owner\fP
+The original owner, exactly as passed to the \f[I]lchown\fP(2) system call.
+.TP 8n
+\f[I]group\fP
+The original group, exactly as passed to the \f[I]lchown\fP(2) system call.
+.\" ----------------------------------------------------
+.SH SEE ALSO
+.TP 8n
+\f[I]lchown\fP(2)
+change ownership of a file
+.TP 8n
+\f[I]explain_lchown_or_die\fP(3)
+change ownership of a file and report errors
+.\" ----------------------------------------------------
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2008 Peter Miller

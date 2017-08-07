@@ -1,0 +1,65 @@
+<!--
+  libexplain - Explain errno values returned by libc functions
+  Copyright (C) 2009, 2010 Peter Miller
+  Written by Peter Miller <pmiller@opensource.org.au>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or (at
+  your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+.hy 0
+.ad l
+<!DOCTYPE HTML PUBLIC
+    "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd"
+    >
+.nf
+<html>
+<head>
+<title>
+No Medium Found, 4.2
+</title>
+</head>
+<body>
+
+<table width="100%" >
+<tr>
+<td align="left" >
+<a href="423-slide.html" >Prev</a>,
+<a href="index.html" >Top</a>
+</td><td align="right" >
+<a href="400-notes.html#4.2" >Notes</a>,
+<a href="425-slide.html" >Next</a>
+</td>
+</tr>
+</table>
+
+<h1 align="center" >
+Walk Along the Path
+</h1>
+
+<table align="center" width=800 ><tr><td>
+For each path component that isn't the final component...
+<p>
+If the component is found and is a symbolic link (symlink), we first
+resolve this symbolic link (with the current lookup directory as
+starting lookup directory), and re-start this step.
+The libexplain library tries to be a little more informative.
+<blockquote><tt>
+unlink(pathname = "/tmp/dangling/rubbish") failed, No such file or
+directory (2, ENOENT) because the "dangling" symbolic link in the pathname
+"/tmp" directory refers to "nowhere" that does not exist
+</tt></blockquote>
+</td></tr></table>
+
+</body>
+</html>

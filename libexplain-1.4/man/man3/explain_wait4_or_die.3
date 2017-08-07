@@ -1,0 +1,84 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008, 2009, 2011 Peter Miller
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or (at
+.\" your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_wait4_or_die
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_wait4_or_die 3
+.SH NAME
+explain_wait4_or_die \- wait for process to change state and report errors
+.if require_index \{
+.XX "explain_wait4_or_die(3)" \
+    "wait for process to change state and report errors"
+.\}
+.SH SYNOPSIS
+#include <libexplain/wait4.h>
+.sp 0.3
+void explain_wait4_or_die(int pid, int *status, int options,
+struct rusage *rusage);
+.SH DESCRIPTION
+The \f[B]explain_wait4_or_die\fP function
+is used to call the \f[I]wait4\fP(2) system
+call.  On failure an explanation will be
+printed to \f[I]stderr\fP,
+obtained from \f[I]explain_wait4\fP(3),
+and then the process terminates
+by calling \f[CW]exit(EXIT_FAILURE)\fP.
+.PP
+This function is intended to be used in a fashion
+similar to the following example:
+.RS
+.ft CW
+.nf
+explain_wait4_or_die(pid, status, options, rusage);
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]pid\fP
+The pid, exactly as to be passed to the \f[I]wait4\fP(2) system call.
+.TP 8n
+\f[I]status\fP
+The status, exactly as to be passed to the \f[I]wait4\fP(2) system call.
+.TP 8n
+\f[I]options\fP
+The options, exactly as to be passed to the \f[I]wait4\fP(2) system call.
+.TP 8n
+\f[I]rusage\fP
+The rusage, exactly as to be passed to the \f[I]wait4\fP(2) system call.
+.TP 8n
+Returns:
+This function only returns on success, see \f[I]wait4\fP(2) for more
+information.  On failure, prints an explanation and exits.
+.\" ----------------------------------------------------
+.SH SEE ALSO
+.TP 8n
+\f[I]wait4\fP(2)
+wait for process to change state
+.TP 8n
+\f[I]explain_wait4\fP(3)
+explain \f[I]wait4\fP(2) errors
+.TP 8n
+\f[I]exit\fP(2)
+terminate the calling process
+.\" ----------------------------------------------------
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2008 Peter Miller

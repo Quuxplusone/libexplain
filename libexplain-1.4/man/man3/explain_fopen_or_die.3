@@ -1,0 +1,63 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008, 2009, 2011 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_fopen_or_die
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_fopen_or_die 3
+.SH NAME
+explain_fopen_or_die \- open file and report errors
+.if require_index \{
+.XX "explain_fopen_or_die(3)" "open file and report errors"
+.\}
+.SH SYNOPSIS
+#include <libexplain/fopen.h>
+.sp
+FILE *explain_fopen_or_die(const char *pathname, const char *flags);
+.SH DESCRIPTION
+The \f[B]explain_fopen_or_die\fP() function opens the file whose name
+is the string pointed to by pathname and associates a stream with it.
+See \f[I]fopen\fP(3) for more information.
+.PP
+This is a quick and simple way for programs to constitently report file
+open errors in a consistent and detailed fahion.
+.SH RETURN VALUE
+Upon successful completion \f[B]explain_fopen_or_die\fP returns a
+\f[I]FILE\fP pointer.
+.PP
+If an error occurs, \f[B]explain_fopen\fP will be called to explain
+the error, which will be printed onto \f[I]stderr\fP, and then the
+process will terminate by calling \f[CW]exit(EXIT_FAILURE)\fP.
+.SH SEE ALSO
+.TP 8n
+\f[I]fopen\fP(3)
+stream open functions
+.TP 8n
+\f[I]explain_fopen\fP(3)
+explain \f[I]fopen\fP(3) errors
+.TP 8n
+\f[I]exit\fP(2)
+terminate the calling process
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2008 Peter Miller
+.SH AUTHOR
+Written by Peter Miller <pmiller@opensource.org.au>

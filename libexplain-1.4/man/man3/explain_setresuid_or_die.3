@@ -1,0 +1,89 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2012 Peter Miller
+.\"
+.\" This program is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by the
+.\" Free Software Foundation; either version 3 of the License, or (at your
+.\" option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_setresuid_or_die
+.TH explain_setresuid_or_die 3
+.SH NAME
+explain_setresuid_or_die \- set r/e/s user ID and report errors
+.if require_index \{
+.XX "explain_setresuid_or_die(3)" \
+    "set real, effective and saved user ID and report errors"
+.\}
+.SH SYNOPSIS
+#include <libexplain/setresuid.h>
+.sp 0.3
+void explain_setresuid_or_die(uid_t ruid, uid_t euid, uid_t suid);
+.br
+int explain_setresuid_on_error(uid_t ruid, uid_t euid, uid_t suid);
+.SH DESCRIPTION
+The \f[B]explain_setresuid_or_die\fP function is used to call the
+\f[I]setresuid\fP(2) system call. On failure an explanation will be printed
+to \f[I]stderr\fP, obtained from the \f[I]explain_setresuid\fP(3) function,
+and then the process terminates by calling \f[CW]exit(EXIT_FAILURE)\fP.
+.PP
+The \f[B]explain_setresuid_on_error\fP function is used to call the
+\f[I]setresuid\fP(2) system call. On failure an explanation will be printed
+to \f[I]stderr\fP, obtained from the \f[I]explain_setresuid\fP(3) function,
+but still returns to the caller.
+.TP 8n
+\f[I]ruid\fP
+The ruid, exactly as to be passed to the \f[I]setresuid\fP(2) system call.
+.TP 8n
+\f[I]euid\fP
+The euid, exactly as to be passed to the \f[I]setresuid\fP(2) system call.
+.TP 8n
+\f[I]suid\fP
+The suid, exactly as to be passed to the \f[I]setresuid\fP(2) system call.
+.\" ----------------------------------------------------
+.SH RETURN VALUE
+The \f[B]explain_setresuid_or_die\fP function only returns on success, see
+\f[I]setresuid\fP(2) for more information. On failure, prints an
+explanation and exits, it does not return.
+.PP
+The \f[B]explain_setresuid_on_error\fP function always returns the value
+return by the wrapped \f[I]setresuid\fP(2) system call.
+.\" ----------------------------------------------------
+.SH EXAMPLE
+The \f[B]explain_setresuid_or_die\fP function is intended to be used in a
+fashion similar to the following example:
+.RS
+.ft CW
+.nf
+explain_setresuid_or_die(ruid, euid, suid);
+.fi
+.ft R
+.RE
+.\" ----------------------------------------------------
+.SH SEE ALSO
+.TP 8n
+\f[I]setresuid\fP(2)
+set real, effective and saved user ID
+.TP 8n
+\f[I]explain_setresuid\fP(3)
+explain \f[I]setresuid\fP(2) errors
+.TP 8n
+\f[I]exit\fP(2)
+terminate the calling process
+.\" ----------------------------------------------------
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2012 Peter Miller
+.\" vim: set ts=8 sw=4 et :

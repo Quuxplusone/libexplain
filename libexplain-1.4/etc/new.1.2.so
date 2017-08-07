@@ -1,0 +1,88 @@
+.\"
+.\" libexplain - a library of system-call-specific strerror replacements
+.\" Copyright (C) 2013 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by the Free
+.\" Software Foundation; either version 3 of the License, or (at your option)
+.\" any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+.\" or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+.\" for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" 11, 34, 36, 43, 44, 50, 52, 53, 58, 61, 62, 72, 74, 75, 76,
+.\" 78, 80, 82, 83, 84, 89, 90, 96, 97, 117, 146, 148, 149
+Explanations are now available or errors reported by the
+\f[I]acl_from_text\fP(3),
+\f[I]acl_get_fd\fP(3),
+\f[I]acl_get_file\fP(3),
+\f[I]acl_set_fd\fP(3),
+\f[I]acl_set_file\fP(3),
+\f[I]acl_to_text\fP(3),
+\f[I]asprintf\fP(3),
+\f[I]avasprintf\fP(3),
+\f[I]endgrent\fP(3),
+\f[I]fchownat\fP(2),
+\f[I]fseek\fP(3),
+\f[I]fstatat\fP(2),
+\f[I]ftello\fP(3),
+\f[I]futimensat\fP(2),
+\f[I]futimens\fP(3),
+\f[I]getgrent\fP(3),
+\f[I]getgrouplist\fP(3),
+\f[I]gethostid\fP(3),
+\f[I]getprioriy\fP(2),
+\f[I]iconv_close\fP(3),
+\f[I]iconv\fP(3),
+\f[I]iconv_open\fP(3),
+\f[I]lutimes\fP(2),
+\f[I]openat\fP(2),
+\f[I]pipe2\fP(2),
+\f[I]setgrent\fP(3),
+\f[I]setpriority\fP(2) and
+\f[I]strcoll\fP(3)
+system calls.
+.TP 2n
+.if n *
+.if t \(bu
+The \f[I]malloc\fP(3), \f[I]et a\fP, diagnostics are now more aware of
+\f[I]getrlimi\fP(2) and \f[I]getrusage\fP(2), in order to give more
+informative messages.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 132
+YunQiang Su <wzssyqa@gmail.com> build problem where a symbol is
+#defined, but it's empty, throwing a warning about uninitialized
+members.
+.br
+Debian: Closes: #723409
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 69
+Chris Leick <c.leick@vollbio.de> contributed a German message translation.
+.TP 2n
+.if n *
+.if t \(bu
+.\" libexplain.1.2.D005
+.\" Change 63
+.\" pmiller, Fri Jun  7 13:05:46 2013, test 555 false negative
+Eric Smith <brouhaha@fedoraproject.org> discovered that test 555
+could give a false negative if process 666 exists when the test
+is run.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 1.2 (2013\[hy]Mar\[hy]14)
+.\" vim: set ts=8 sw=4 et :

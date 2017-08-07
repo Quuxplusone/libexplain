@@ -1,0 +1,11 @@
+This is an unmaintained snapshot of the "libexplain" sources.
+The official, maintained source for "libexplain" is located at
+https://sourceforge.net/projects/libexplain/
+
+The only reason this GitHub project exists is that I was trying
+to find the source for libexplain online, and couldn't find it
+except in tarball downloads on SourceForge (which are not browsable
+by Web browsers, and not spiderable by search engines).
+
+If you intend to build libexplain from source, please visit
+https://sourceforge.net/projects/libexplain/

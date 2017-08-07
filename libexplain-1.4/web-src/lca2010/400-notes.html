@@ -1,0 +1,100 @@
+<!--
+  libexplain - Explain errno values returned by libc functions
+  Copyright (C) 2009, 2010 Peter Miller
+  Written by Peter Miller <pmiller@opensource.org.au>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or (at
+  your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+.hy 0
+.ad l
+<!DOCTYPE HTML PUBLIC
+    "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd"
+    >
+.br
+<html>
+<head>
+<title>
+No medium Found, 4.0, Notes
+</title>
+</head>
+<body>
+
+<table width="100%" >
+<tr>
+    <td align="left" >
+        <a href="300-notes.html" >Prev</a>,
+        <a href="000-notes.html" >Top</a>
+    </td><td align="right" >
+        <a href="400-slide.html" >Slide</a>,
+        <a href="500-notes.html" >Next</a>
+    </td>
+</tr>
+</table>
+
+<h1>
+4. Path Resolution
+</h1>
+
+<ul>
+<li> <i>no-one</i> reads <i>path_resolution</i>(7); <a
+     href="400-slide.html">slide</a>
+<li> This was done as the most significant part of the proof-of-concept.
+<li> source file name on screen
+</ul>
+
+<h2> <a name="4.1">4.1</a> Start of the Resolution Process </h2>
+<ul>
+<li> root vs currdir <b>i</b>node; <a href="410-slide.html" >slide</a>
+<li> prints absolute paths for background processes
+</ul>
+
+<h2> <a name="4.2">4.2</a> Walk Along the Path </h2>
+<ul>
+<li> EACCES directory; <a href="420-slide.html" >slide</a>
+<li> ENOENT directory; <a href="421-slide.html" >slide</a>
+<li> ENOENT directory <i>fuzzy</i> typos; <a href="422-slide.html" >slide</a>
+<li> ENOTDIR; <a href="423-slide.html" >slide</a>
+<li> ENOENT dangling symlink; <a href="424-slide.html" >slide</a>
+<li> ELOOP; <a href="425-slide.html" >slide</a>
+<li> EMLINK; <a href="426-slide.html" >slide</a>
+</ul>
+
+<h2> <a name="4.3">4.3</a> Find the Final Entry </h2>
+<ul>
+<li> as above
+<li> EEXIST; <a href="430-slide.html" >slide</a>
+<li> ENOTDIR; <a href="431-slide.html" >slide</a>
+<li> ELOOP O_NOFOLLOW; <a href="432-slide.html" >slide</a>
+<li> EINVAL wrong file type; <a href="433-slide.html" >slide</a>
+<li> EPERM sticky bit; <a href="433-slide.html" >slide</a>
+<li>
+</ul>
+
+<h2> <a name="4.4">4.4</a> Limits </h2>
+<ul>
+<li> ENAMETOOLONG pathname; <a href="440-slide.html" >slide</a>
+<li> ENAMETOOLONG filename; <a href="441-slide.html" >slide</a>
+<li> ENOENT empty; <a href="442-slide.html" >slide</a>
+</ul>
+
+<h2> <a name="4.5">4.5</a> Permissions </h2>
+<ul>
+<li> this takes a lot of explaining; <a href="450-slide.html" >slide</a>
+<li> permission bits are not bit-wise ORed together
+<li> file "--x" and directory "--x" are different
+</ul>
+
+</body>
+</html>

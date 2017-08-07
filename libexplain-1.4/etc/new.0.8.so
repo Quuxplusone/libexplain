@@ -1,0 +1,39 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2009, 2010 Peter Miller
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 15
+Two false negatives in the tests have been fixed.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 14
+The ./configure script now explicitly looks for \f[I]bison\fP(1), and
+complains if it cannot be found.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 12
+The \f[I]socket\fP(7) address family is now decoded.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.8 (2009\[hy]Feb\[hy]14)
+.\" vim: set ts=8 sw=4 et

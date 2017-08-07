@@ -1,0 +1,39 @@
+#
+# libexplain - Explain errno values returned by libc functions
+# Copyright (C) 2013 Peter Miller
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 3 of the License, or (at your
+# option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+Include: linux/suspend_ioctls.h
+#
+# Requests that don't alter system state, device state or media state.
+# These are safe to probe, and will not cause probems or damage.
+Get:
+ SNAPSHOT_ALLOC_SWAP_PAGE
+ SNAPSHOT_AVAIL_SWAP_SIZE
+ SNAPSHOT_GET_IMAGE_SIZE
+#
+# These are requests that alter the system state.
+Set:
+ SNAPSHOT_ATOMIC_RESTORE
+ SNAPSHOT_CREATE_IMAGE
+ SNAPSHOT_FREE
+ SNAPSHOT_FREEZE
+ SNAPSHOT_FREE_SWAP_PAGES
+ SNAPSHOT_PLATFORM_SUPPORT
+ SNAPSHOT_POWER_OFF
+ SNAPSHOT_PREF_IMAGE_SIZE
+ SNAPSHOT_S2RAM
+ SNAPSHOT_UNFREEZE
+# vim: set ts=8 sw=4 et :

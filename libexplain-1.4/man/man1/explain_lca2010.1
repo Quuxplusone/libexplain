@@ -1,0 +1,1314 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2009, 2010 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) libexplain
+.de E(
+.sp 0.3
+.RS
+.ft CW
+.nf
+..
+.de E)
+.fi
+.ft R
+.RE
+.sp 0.3
+..
+.TH "explain_lca2010" "1"
+.SH NAME
+explain_lca2010 \- No medium found: \
+when it's time to stop trying to read \f[I]strerror\fP(3)'s mind.
+.if require_index \{
+.XX "explain_lca2010(1)" \
+    "No medium found: when it's time to stop trying to read strerror's mind"
+.\}
+.SH "MOTIVATION"
+The idea for \*(n) occurred to me back in the early 1980s.
+Whenever a system call returns an error, the kernel knows exactly
+what went wrong... and compresses this into less that 8 bits of
+\f[I]errno\fP.  User space has access to the same data as the kernel, it
+should be possible for user space to figure out exactly what happened to
+provoke the error return, and use this to write good error messages.
+.PP
+Could it be that simple?
+.SS "Error messages as finesse"
+Good error messages are often those \[lq]one percent\[rq] tasks that get
+dropped when schedule pressure squeezes your project.  However, a good
+error message can make a huge, disproportionate improvement to the
+user experience, when the user wanders into scarey unknown territory not
+usually encountered.  This is no easy task.
+.PP
+As a larval programmer, the author didn't see the problem with
+(completely accurate) error messages like this one:
+.E(
+floating exception (core dumped)
+.E)
+until the alternative non\[hy]programmer interpretation was pointed out.
+But that isn't the only thing wrong with Unix error messages.
+How often do you see error messages like:
+.E(
+$ \f[CB]./stupid\fP
+can't open file
+$
+.E)
+There are two options for a developer at this point:
+.TP 2m
+1.
+you can run a debugger, such as \f[I]gdb\fP(1), or
+.TP 2m
+2.
+you can use \f[I]strace\fP(1) or \f[I]truss\fP(1) to look inside.
+.TP 2m
+\[bu]
+Remember that your users may not even have access to these tools,
+let alone the ability to use them.
+(It's a very long time since \f[I]Unix beginner\fP meant \[lq]has only written
+\f[I]one\fP device driver\[rq].)
+.PP
+In this example, however,
+using \f[I]strace\fP(1) reveals
+.E(
+$ \f[CB]strace \-e trace=open ./stupid\fP
+open("some/file", O_RDONLY) = \-1 ENOENT (No such file or directory)
+can't open file
+$
+.E)
+This is considerably more information than the error message provides.
+Typically, the stupid source code looks like this
+.E(
+int fd = open("\f[I]some/thing\fP", O_RDONLY);
+if (fd < 0)
+{
+    fprintf(stderr, "can't open file\en");
+    exit(1);
+}
+.E)
+The user isn't told \f[I]which\fP file, and
+also fails to tell the user \f[I]which\fP error.
+Was the file even there?  Was there a permissions problem?
+It does tell you it was trying to open a file,
+but that was probably by accident.
+.PP
+Grab your clue stick and go beat the larval programmer with it.
+Tell him about \f[I]perror\fP(3).  The next time you use the program
+you see a different error message:
+.E(
+$ \f[CB]./stupid\fP
+open: No such file or directory
+$
+.E)
+Progress, but not what we expected.  How can the user fix the problem
+if the error message doesn't tell him what the problem was?
+Looking at the source, we see
+.E(
+int fd = open("\f[I]some/thing\fP", O_RDONLY);
+if (fd < 0)
+{
+    perror("open");
+    exit(1);
+}
+.E)
+Time for another run with the clue stick.
+This time, the error message takes one step forward and one step back:
+.E(
+$ \f[CB]./stupid\fP
+\f[I]some/thing\fP: No such file or directory
+$
+.E)
+Now we know the file it was trying to open, but are no longer informed
+that it was \f[I]open\fP(2) that failed.  In this case it is probably not
+significant, but it can be significant for other system calls.  It could
+have been \f[I]creat\fP(2) instead, an operation implying that different
+permissions are necessary.
+.E(
+const char *filename = "\f[I]some/thing\fP";
+int fd = open(filename, O_RDONLY);
+if (fd < 0)
+{
+    perror(filename);
+    exit(1);
+}
+.E)
+The above example code is unfortunately typical of non\[hy]larval
+programmers as well.  Time to tell our padawan learner about the
+\f[I]strerror\fP(3) system call.
+.E(
+$ \f[CB]./stupid\fP
+open \f[I]some/thing\fP: No such file or directory
+$
+.E)
+This maximizes the information that can be presented to the user.
+The code looks like this:
+.E(
+const char *filename = "\f[I]some/thing\fP";
+int fd = open(filename, O_RDONLY);
+if (fd < 0)
+{
+    fprintf(stderr, "open %s: %s\en", filename, strerror(errno));
+    exit(1);
+}
+.E)
+Now we have the system call, the filename, and the error string.
+This contains all the information that \f[I]strace\fP(1) printed.
+That's as good as it gets.
+.PP
+Or is it?
+.SS "Limitations of \f[CW]perror\fP and \f[CW]strerror\fP"
+The problem the author saw, back in the 1980s, was that the error message is
+incomplete.  Does \[lq]no such file or directory\[rq] refer to the
+\[lq]\f[I]some\fP\[rq] directory, or to the \[lq]\f[I]thing\fP\[rq] file
+in the \[lq]\f[I]some\fP\[rq] directory?
+.PP
+A quick look at the man page for \f[I]strerror\fP(3) is telling:
+.sp 0.3
+.RS
+strerror \- return string describing error number
+.RE
+.sp 0.3
+Note well: it is describing the error \f[I]number\fP, not the error.
+.PP
+On the other hand, the kernel \f[I]knows\fP what the error was.  There
+was a specific point in the kernel code, caused by a specific condition,
+where the kernel code branched and said \[lq]no\[rq].  Could a user\[hy]space
+program figure out the specific condition and write a better error
+message?
+.PP
+However, the problem goes deeper.  What if the problem occurs during
+the \f[I]read\fP(2) system call, rather than the \f[I]open\fP(2) call?
+It is simple for the error message associated with \f[I]open\fP(2) to
+include the file name, it's right there.  But to be able to include a
+file name in the error associated with the \f[I]read\fP(2) system call,
+you have to pass the file name all the way down the call stack,
+as well as the file descriptor.
+.PP
+And here is the bit that grates: the kernel already knows what file name
+the file descriptor is associated with.  Why should a programmer have to
+pass redundant data all the way down the call stack just to improve an
+error message that may never be issued?  In reality, many programmers
+don't bother, and the resulting error messages are the worse for it.
+.PP
+But that was the 1980s, on a PDP11, with limited resources and no shared
+libraries.  Back then, no flavor of Unix included \f[CW]/proc\fP even
+in rudimentary form, and the \f[I]lsof\fP(1) program was over a decade
+away.  So the idea was shelved as impractical.
+.SS "Level Infinity Support"
+Imagine that you are level infinity support.  Your job description says
+that you never \f[I]ever\fP have to talk to users.  Why, then, is there
+still a constant stream of people wanting you, the local Unix guru, to
+decipher yet another error message?
+.PP
+Strangely, 25 years later, despite a simple permissions system,
+implemented with complete consistency, most Unix users still have no
+idea how to decode \[lq]No such file or directory\[rq], or any of the
+other cryptic error messages they see every day.
+Or, at least, cryptic to them.
+.PP
+Wouldn't it be nice if first level tech support didn't need error
+messages deciphered?  Wouldn't it be nice to have error messages that
+users could understand without calling tech support?
+.PP
+These days \f[CW]/proc\fP on Linux is more than able to provide the
+information necessary to decode the vast majority of error messages, and
+point the user to the proximate cause of their problem.  On systems with
+a limited \f[CW]/proc\fP implementation, the \f[I]lsof\fP(1) command can
+fill in many of the gaps.
+.PP
+In 2008, the stream of translation requests happened to the author
+way too often.  It was time to re\[hy]examine that 25 year old idea, and
+\*(n) is the result.
+.SH "USING THE LIBRARY"
+The interface to the library tries to be consistent, where possible.
+Let's start with an example using \f[I]strerror\fP(3):
+.E(
+if (rename(old_path, new_path) < 0)
+{
+    fprintf(stderr, "rename %s %s: %s\en", old_path, new_path,
+        strerror(errno));
+    exit(1);
+}
+.E)
+The idea behind \*(n) is to provide a \f[I]strerror\fP(3)
+equivalent for \f[B]each\fP system call, tailored specifically to that
+system call, so that it can provide a more detailed error message, containing
+much of the information you see under the \[lq]ERRORS\[rq] heading of
+section 2 and 3 \f[I]man\fP pages, supplemented with information about
+actual conditions, actual argument values, and system limits.
+.SS The Simple Case
+The \f[I]strerror\fP(3) replacement:
+.E(
+if (rename(old_path, new_path) < 0)
+{
+    fprintf(stderr, "%s\en", explain_rename(old_path, new_path));
+    exit(1);
+}
+.E)
+.SS The Errno Case
+It is also possible to pass an explicit \f[I]errno\fP(3) value, if you must
+first do some processing that would disturb \f[I]errno\fP, such as error
+recovery:
+.E(
+if (rename(old_path, new_path < 0))
+{
+    int old_errno = errno;
+    ...\f[I]code that disturbs errno\fP...
+    fprintf(stderr, "%s\en", explain_errno_rename(old_errno,
+        old_path, new_path));
+    exit(1);
+}
+.E)
+.SS The Multi\[hy]thread Cases
+Some applications are multi\[hy]threaded, and thus are unable to share
+\*(n)'s internal buffer.
+You can supply your own buffer using
+.E(
+if (unlink(pathname))
+{
+    char message[3000];
+    explain_message_unlink(message, sizeof(message), pathname);
+    error_dialog(message);
+    return \-1;
+}
+.E)
+And for completeness, both \f[I]errno\fP(3) and thread\[hy]safe:
+.E(
+ssize_t nbytes = read(fd, data, sizeof(data));
+if (nbytes < 0)
+{
+    char message[3000];
+    int old_errno = errno;
+    ...\f[I]error recovery\fP...
+    explain_message_errno_read(message, sizeof(message),
+        old_errno, fd, data, sizeof(data));
+    error_dialog(message);
+    return \-1;
+}
+.E)
+.PP
+These are replacements for \f[I]strerror_r\fP(3),
+on systems that have it.
+.SS Interface Sugar
+A set of functions added as convenience functions,
+to woo programmers to use the \*(n) library,
+turn out to be the author's most commonly used \*(n) functions
+in command line programs:
+.E(
+int fd = explain_creat_or_die(filename, 0666);
+.E)
+This function attempts to create a new file.  If it can't, it prints an
+error message and exits with EXIT_FAILURE.  If there is no error, it
+returns the new file descriptor.
+.PP
+A related function:
+.E(
+int fd = explain_creat_on_error(filename, 0666);
+.E)
+will print the error message on failure, but also returns the original
+error result, and \f[I]errno\fP(3) is unmolested, as well.
+.SS "All the other system calls"
+In general, every system call has its own include file
+.E(
+#include <libexplain/\f[I]name\fP.h>
+.E)
+that defines function prototypes for six functions:
+.TP 2m
+\[bu]
+\f[CW]explain_\fP\f[I]name\fP,
+.TP 2m
+\[bu]
+\f[CW]explain_errno_\fP\f[I]name\fP,
+.TP 2m
+\[bu]
+\f[CW]explain_message_\fP\f[I]name\fP,
+.TP 2m
+\[bu]
+\f[CW]explain_message_errno_\fP\f[I]name\fP,
+.TP 2m
+\[bu]
+\f[CW]explain_\fP\f[I]name\fP\f[CW]_or_die\fP and
+.TP 2m
+\[bu]
+\f[CW]explain_\fP\f[I]name\fP\f[CW]_on_error\fP.
+.PP
+Every function prototype has Doxygen documentation, and this
+documentation \f[I]is not\fP stripped when the include files are
+installed.
+.PP
+The \f[I]wait\fP(2) system call (and friends) have some extra variants
+that also interpret failure to be an exit status that isn't EXIT_SUCCESS.
+This applies to \f[I]system\fP(3) and \f[I]pclose\fP(3) as well.
+.PP
+.so etc/coverage.so
+There are many more system calls yet to implement.
+System calls that never return, such as \f[I]exit\fP(2),
+are not present in the library, and will never be.
+The \f[I]exec\fP family of system calls \f[I]are\fP supported,
+because they return when there is an error.
+.SS "Cat"
+This is what a hypothetical \[lq]cat\[rq] program could look like,
+with full error reporting, using \*(n).
+.E(
+#include <libexplain/libexplain.h>
+#include <stdlib.h>
+#include <unistd.h>
+.E)
+There is one include for \*(n), plus the usual suspects.
+(If you wish to reduce the preprocessor load, you can use the
+specific \f[CW]<libexplain/\fP\f[I]name\fP\f[CW].h>\fP includes.)
+.E(
+static void
+process(FILE *fp)
+{
+    for (;;)
+    {
+        char buffer[4096];
+        size_t n = explain_fread_or_die(buffer, 1, sizeof(buffer), fp);
+        if (!n)
+            break;
+        explain_fwrite_or_die(buffer, 1, n, stdout);
+    }
+}
+.E)
+The \f[I]process\fP function copies a file stream to the standard
+output.  Should an error occur for either reading or writing, it is
+reported (and the pathname will be included in the error) and the
+command exits with EXIT_FAILURE.  We don't even worry about tracking the
+pathnames, or passing them down the call stack.
+.E(
+int
+main(int argc, char **argv)
+{
+    for (;;)
+    {
+        int c = getopt(argc, argv, "o:");
+        if (c == EOF)
+            break;
+        switch (c)
+        {
+        case 'o':
+            explain_freopen_or_die(optarg, "w", stdout);
+            break;
+.E)
+The fun part of this code is that \*(n) can report errors
+\f[I]including the pathname\fP even if you \f[B]don't\fP explicitly
+re\[hy]open stdout as is done here.
+We don't even worry about tracking the file name.
+.E(
+        default:
+            fprintf(stderr, "Usage: %ss [ \-o <filename> ] <filename>...\en",
+                argv[0]);
+            return EXIT_FAILURE;
+        }
+    }
+    if (optind == argc)
+        process(stdin);
+    else
+    {
+        while (optind < argc)
+        {
+            FILE *fp = explain_fopen_or_die(argv[optind]++, "r");
+            process(fp);
+            explain_fclose_or_die(fp);
+        }
+    }
+.E)
+The standard output will be closed implicitly, but too late for an error
+report to be issued, so we do that here, just in case the buffered I/O
+hasn't written anything yet, and there is an ENOSPC error or something.
+.E(
+    explain_fflush_or_die(stdout);
+    return EXIT_SUCCESS;
+}
+.E)
+That's all.  Full error reporting, clear code.
+.SS "Rusty's Scale of Interface Goodness"
+For those of you not familiar with it, Rusty Russel's
+\[lq]How Do I Make This Hard to Misuse?\[rq]
+page is a must\[hy]read for API designers.
+.br
+http://ozlabs.org/~rusty/index.cgi/tech/2008\[hy]03\[hy]30.html
+.PP
+\f[I]10. It's impossible to get wrong.\fP
+.PP
+Goals need to be set high, ambitiously high, lest you accomplish them
+and think you are finished when you are not.
+.PP
+The \*(n) library detects bogus pointers and many other
+bogus system call parameters, and generally tries to avoid segfaults in
+even the most trying circumstances.
+.PP
+The \*(n) library is designed to be thread safe.
+More real\[hy]world use will likely reveal places this can be improved.
+.PP
+The biggest problem is with the actual function names themselves.
+Because C does not have name\[hy]spaces, the \*(n) library always
+uses an \f[CW]explain_\fP name prefix.  This is the traditional way of
+creating a pseudo\[hy]name\[hy]space in order to avoid symbol conflicts.
+However, it results in some unnatural\[hy]sounding names.
+.PP
+\f[I]9. The compiler or linker won't let you get it wrong.\fP
+.PP
+A common mistake is to use \f[CW]explain_open\fP where
+\f[CW]explain_open_or_die\fP was intended.
+Fortunately, the compiler will often issue a type error at this point
+(\f[I]e.g.\fP can't assign \f[CW]const char *\fP rvalue to an
+\f[CW]int\fP lvalue).
+.PP
+\f[I]8. The compiler will warn if you get it wrong.\fP
+.PP
+If \f[CW]explain_rename\fP is used when \f[CW]explain_rename_or_die\fP
+was intended, this can cause other problems.  GCC has a useful
+\f[CW]warn_unused_result\fP function attribute, and
+the \*(n) library attaches it to all the
+\f[CW]explain_\fP\f[I]name\fP function calls to produce a warning when
+you make this mistake.  Combine this with \f[I]gcc \-Werror\fP to promote
+this to level 9 goodness.
+.PP
+\f[I]7. The obvious use is (probably) the correct one.\fP
+.PP
+The function names have been chosen to convey their meaning, but
+this is not always successful.
+While \f[CW]explain_\fP\f[I]name\fP\f[CW]_or_die\fP
+and \f[CW]explain_\fP\f[I]name\fP\f[CW]_on_error\fP
+are fairly descriptive,
+the less\[hy]used thread safe variants are harder to decode.
+The function prototypes help the compiler towards understanding,
+and the Doxygen comments in the header files help the user towards
+understanding.
+.PP
+\f[I]6. The name tells you how to use it.\fP
+.PP
+It is particularly important to read
+\f[CW]explain_\fP\f[I]name\fP\f[CW]_or_die\fP as
+\[lq]explain (\f[I]name\fP or die)\[rq].
+Using a consistent \f[CW]explain_\fP name\[hy]space prefix
+has some unfortunate side\[hy]effects in the obviousness department, as well.
+.PP
+The order of words in the names also indicate the order of the arguments.
+The argument lists always \f[I]end\fP with the same arguments as
+passed to the system call; \f[I]all of them\fP.  If \f[CW]_errno_\fP
+appears in the name, its argument
+always precedes the system call arguments.  If
+\f[CW]_message_\fP appears in the name, its two arguments always come
+first.
+.PP
+\f[I]5. Do it right or it will break at runtime.\fP
+.PP
+The \*(n) library detects bogus pointers and many other bogus
+system call parameters, and generally tries to avoid segfaults in even
+the most trying circumstances.  It should never break at runtime,
+but more real\[hy]world use will no doubt improve this.
+.PP
+Some error messages are aimed at developers and maintainers rather than
+end users, as this can assist with bug resolution.  Not so much
+\[lq]break at runtime\[rq] as \[lq]be informative at runtime\[rq] (after
+the system call barfs).
+.PP
+\f[I]4. Follow common convention and you'll get it right.\fP
+.PP
+Because C does not have name\[hy]spaces, the \*(n) library always
+uses an \f[CW]explain_\fP name prefix.  This is the traditional way of
+creating a pseudo\[hy]name\[hy]space in order to avoid symbol conflicts.
+.PP
+The trailing arguments of all the \*(n) call are identical to
+the system call they are describing.  This is intended to provide a
+consistent convention in common with the system calls themselves.
+.PP
+\f[I]3. Read the documentation and you'll get it right.\fP
+.PP
+The \*(n) library aims to have complete Doxygen documentation for
+each and every public API call (and internally as well).
+.SH MESSAGE CONTENT
+Working on \*(n) is a bit like looking at the underside of your
+car when it is up on the hoist at the mechanic's.  There's some ugly
+stuff under there, plus mud and crud, and users rarely see it.  A good
+error message needs to be informative, even for a user who has been
+fortunate enough not to have to look at the under\[hy]side very often, and
+also informative for the mechanic listening to the user's description
+over the phone.  This is no easy task.
+.PP
+Revisiting our first example, the code would like this if it uses \*(n):
+.E(
+int fd = explain_open_or_die("some/thing", O_RDONLY, 0);
+.E)
+will fail with an error message like this
+.E(
+.fi
+open(pathname = "some/file", flags = O_RDONLY) failed, No such file or
+directory (2, ENOENT) because there is no "some" directory in the current
+directory
+.E)
+This breaks down into three pieces
+.E(
+\f[I]system\[hy]call\fP failed, \f[I]system\[hy]error\fP because
+\f[I]explanation\fP
+.E)
+.SS "Before Because"
+It is possible to see the part of the message before \[lq]because\[rq]
+as overly technical to non\[hy]technical users, mostly as a result
+of accurately printing the system call itself at the beginning of the
+error message.  And it looks like \f[I]strace\fP(1) output,
+for bonus geek points.
+.E(
+.fi
+open(pathname = "some/file", flags = O_RDONLY) failed, No such file or
+directory (2, ENOENT)
+.E)
+This part of the error message is essential to the developer when he is
+writing the code, and equally important to the maintainer who has to read
+bug reports and fix bugs in the code.  It says exactly what failed.
+.PP
+If this text is not presented to the user then the user cannot
+copy\[hy]and\[hy]paste it into a bug report, and if it isn't in the bug report
+the maintainer can't know what actually went wrong.
+.PP
+Frequently tech staff will use \f[I]strace\fP(1) or \f[I]truss\fP(1) to
+get this exact information, but this avenue is not open when reading bug
+reports.  The bug reporter's system is far far away, and, by now, in
+a far different state.  Thus, this information needs to be in the bug
+report, which means it must be in the error message.
+.PP
+The system call representation also gives context to the rest of the
+message.  If need arises, the offending system call argument may be
+referred to by name in the explanation after \[lq]because\[rq].  In
+addition, all strings are fully quoted and escaped C strings, so
+embedded newlines and non\[hy]printing characters will not cause the user's
+terminal to go haywire.
+.PP
+The \f[I]system\[hy]error\fP is what comes out of \f[I]strerror\fP(2), plus
+the error symbol.  Impatient and expert sysadmins could stop reading at
+this point, but the author's experience to date is that reading further
+is rewarding.
+(If it isn't rewarding, it's probably an area of \*(n) that can be
+improved.  Code contributions are welcome, of course.)
+.SS "After Because"
+.PP
+This is the portion of the error message aimed at non\[hy]technical users.
+It looks beyond the simple system call arguments, and
+looks for something more specific.
+.E(
+.fi
+there is no "some" directory in the current directory
+.E)
+This portion attempts to explain the proximal cause of the error in
+plain language, and it is here that internationalization is essential.
+.PP
+In general, the policy is to include as much information as possible, so
+that the user doesn't need to go looking for it (and doesn't leave it out
+of the bug report).
+.SS "Internationalization"
+Most of the error messages in the \*(n) library have been
+internationalized.  There are no localizations as yet, so if you want
+the explanations in your native language, please contribute.
+.PP
+The \[lq]most of\[rq] qualifier, above, relates to the fact that the
+proof\[hy]of\[hy]concept implementation did not include internationalization
+support.  The code base is being revised progressively, usually as a
+result of refactoring messages so that each error message string appears
+in the code exactly once.
+.PP
+Provision has been made for languages that need to assemble the portions of
+.E(
+\f[I]system\[hy]call\fP failed, \f[I]system\[hy]error\fP \
+because \f[I]explanation\fP
+.E)
+in different orders for correct grammar in localized error messages.
+.SS Postmortem
+There are times when a program has yet to use \*(n), and you can't
+use \f[I]strace\fP(1) either.
+There is an \f[I]explain\fP(1) command included with \*(n) that can
+be used to decipher error messages, if the state of the underlying system
+hasn't changed too much.
+.E(
+$ \f[CB]explain rename foo /tmp/bar/baz \-e ENOENT\fP
+.fi
+rename(oldpath = "foo", newpath = "/tmp/bar/baz") failed, No such file or
+directory (2, ENOENT) because there is no "bar" directory in the newpath
+"/tmp" directory
+.nf
+$
+.E)
+Note how the path ambiguity is resolved by using the system call
+argument name.  Of course, you have to know the error and the system
+call for \f[I]explain\fP(1) to be useful.  As an aside, this is one of
+the ways used by the \*(n) automatic test suite to verify that
+\*(n) is working.
+.SS Philosophy
+\[lq]Tell me everything, including stuff I didn't know to look for.\[rq]
+.PP
+The library is implemented in such a way that when statically linked,
+only the code you actually use will be linked.  This is achieved by
+having one function per source file, whenever feasible.
+.PP
+When it is possible to supply more information, \*(n) will do so.
+The less the user has to track down for themselves, the better.
+This means that UIDs are accompanied by the user name, GIDs are
+accompanied by the group name,
+PIDs are accompanied by the process name,
+file descriptors and streams are accompanied by the pathname,
+\f[I]etc\fP.
+.PP
+When resolving paths, if a path component does not exist, \*(n)
+will look for similar names, in order to suggest alternatives for
+typographical errors.
+.PP
+The \*(n) library
+tries to use as little heap as possible, and usually none.
+This is to avoid perturbing the process state, as far as possible,
+although sometimes it is unavoidable.
+.PP
+The \*(n) library
+attempts to be thread safe, by avoiding global variables,
+keeping state on the stack as much as possible.
+There is a single common message buffer, and the functions that use it are
+documented as not being thread safe.
+.PP
+The \*(n) library
+does not disturb a process's signal handlers.
+This makes determining whether a pointer would segfault a challenge,
+but not impossible.
+.PP
+When information is available via a system call as well as available
+through a \f[CW]/proc\fP entry, the system call is preferred.
+This is to avoid disturbing the process's state.
+There are also times when no file descriptors are available.
+.PP
+The \*(n) library
+is compiled with large file support.
+There is no large/small schizophrenia.
+Where this affects the argument types in the API, and error will be issued
+if the necessary large file defines are absent.
+.PP
+FIXME: Work is needed to make sure that file system quotas
+are handled in the code.
+This applies to some \f[I]getrlimit\fP(2) boundaries, as well.
+.PP
+There are cases when relatives paths are uninformative.
+For example: system daemons, servers and background processes.
+In these cases, absolute paths are used in the error explanations.
+.SH PATH RESOLUTION
+Short version: see \f[I]path_resolution\fP(7).
+.PP
+Long version:
+Most users have never heard of \f[I]path_resolution\fP(7),
+and many advanced users have never read it.
+Here is an annotated version:
+.SS Step 1: Start of the resolution process
+If the pathname starts with the slash (\[lq]/\[rq]) character, the
+starting lookup directory is the root directory of the calling process.
+.PP
+If the pathname does not start with the slash(\[lq]/\[rq]) character,
+the starting lookup directory of the resolution process is the current
+working directory of the process.
+.SS Step 2: Walk along the path
+Set the current lookup directory to the starting lookup directory.  Now,
+for each non\[hy]final component of the pathname, where a component is a
+substring delimited by slash (\[lq]/\[rq]) characters, this component is
+looked up in the current lookup directory.
+.PP
+If the process does not have search permission on the current lookup
+directory, an EACCES error is returned ("Permission denied").
+.E(
+.fi
+open(pathname = "/home/archives/.ssh/private_key", flags = O_RDONLY)
+failed, Permission denied (13, EACCES) because the process does not have
+search permission to the pathname "/home/archives/.ssh" directory, the
+process effective GID 1000 "pmiller" does not match the directory owner
+1001 "archives" so the owner permission mode "rwx" is ignored, the others
+permission mode is "\-\-\-", and the process is not privileged (does not have
+the DAC_READ_SEARCH capability)
+.E)
+.PP
+If the component is not found, an ENOENT error is returned ("No such
+file or directory").
+.E(
+.fi
+unlink(pathname = "/home/microsoft/rubbish") failed, No such file or
+directory (2, ENOENT) because there is no "microsoft" directory in the
+pathname "/home" directory
+.E)
+.PP
+There is also some support for users when they mis\[hy]type pathnames,
+making suggestions when ENOENT is returned:
+.E(
+.fi
+open(pathname = "/user/include/fcntl.h", flags = O_RDONLY)
+failed, No such file or directory (2, ENOENT) because there is no "user"
+directory in the pathname "/" directory, did you mean the "usr" directory
+instead?
+.E)
+.PP
+If  the  component  is found, but is neither a directory nor a symbolic
+link, an ENOTDIR error is returned ("Not a directory").
+.E(
+.fi
+open(pathname = "/home/pmiller/.netrc/lca", flags = O_RDONLY) failed, Not a
+directory (20, ENOTDIR) because the ".netrc" regular file in the pathname
+"/home/pmiller" directory is being used as a directory when it is not
+.E)
+.PP
+If the component is found and is a directory, we set the current lookup
+directory to that directory, and go to the next component.
+.PP
+If the component is found and is a symbolic link (symlink), we first
+resolve this symbolic link (with the current lookup directory as
+starting lookup directory).  Upon error, that error is returned.  If
+the result is not a directory, an ENOTDIR error is returned.
+.E(
+.fi
+unlink(pathname = "/tmp/dangling/rubbish") failed, No such file or
+directory (2, ENOENT) because the "dangling" symbolic link in the pathname
+"/tmp" directory refers to "nowhere" that does not exist
+.E)
+If the resolution of the symlink is successful and returns a directory,
+we set the current lookup directory to that directory, and go to
+the next component.  Note that the resolution process here involves
+recursion.  In order to protect the kernel against stack overflow, and
+also to protect against denial of service, there are limits on the
+maximum recursion depth, and on the maximum number of symbolic links
+followed.  An ELOOP error is returned when the maximum is exceeded ("Too
+many levels of symbolic links").
+.E(
+.fi
+open(pathname = "/tmp/dangling", flags = O_RDONLY) failed, Too many levels
+of symbolic links (40, ELOOP) because a symbolic link loop was encountered
+in pathname, starting at "/tmp/dangling"
+.E)
+It is also possible to get an ELOOP or EMLINK error if there are too many
+symlinks, but no loop was detected.
+.E(
+.fi
+open(pathname = "/tmp/rabbit\[hy]hole", flags = O_RDONLY) failed, Too many
+levels of symbolic links (40, ELOOP) because too many symbolic links
+were encountered in pathname (8)
+.E)
+Notice how the actual limit is also printed.
+.SS Step 3: Find the final entry
+The lookup of the final component of the pathname goes just like that
+of all other components, as described in the previous step, with two
+differences:
+.TP 4n
+(i)
+The final component need not be a directory (at least as far as the path
+resolution process is concerned.  It may have to be a directory, or a
+non\[hy]directory, because of the requirements of the specific system call).
+.TP 4n
+(ii)
+It is not necessarily an error if the final component is not found;
+maybe we are just creating it.  The details on the treatment of the
+final entry are described in the manual pages of the specific system
+calls.
+.TP 4n
+(iii)
+It is also possible to have a problem with the last component if it is a
+symbolic link and it should not be followed.
+For example, using the \f[I]open\fP(2) O_NOFOLLOW flag:
+.E(
+.fi
+open(pathname = "a\[hy]symlink", flags = O_RDONLY | O_NOFOLLOW) failed, Too many
+levels of symbolic links (ELOOP) because O_NOFOLLOW was specified but
+pathname refers to a symbolic link
+.E)
+.TP 4n
+(iv)
+It is common for users to make mistakes when typing pathnames.
+The \*(n) library attempts to make suggestions when ENOENT is returned,
+for example:
+.E(
+.fi
+open(pathname = "/usr/include/filecontrl.h", flags = O_RDONLY)
+failed, No such file or directory (2, ENOENT) because there is no
+"filecontrl.h" regular file in the pathname "/usr/include" directory, did
+you mean the "fcntl.h" regular file instead?
+.E)
+.TP 4n
+(v)
+It is also possible that the final component is required to be something
+other than a regular file:
+.E(
+.fi
+readlink(pathname = "just\[hy]a\[hy]file", data = 0x7F930A50, data_size = 4097)
+failed, Invalid argument (22, EINVAL)
+because pathname is a regular file, not a symbolic link
+.E)
+.TP 4n
+(vi)
+FIXME: handling of the "t" bit.
+.SS Limits
+There are a number of limits with regards to pathnames and filenames.
+.TP 8n
+Pathname length limit
+There is a maximum length for pathnames.  If the pathname (or some
+intermediate pathname obtained while resolving symbolic links) is too
+long, an ENAMETOOLONG error is returned ("File name too long").
+Notice how the system limit is included in the error message.
+.E(
+.fi
+open(pathname = "\f[I]very...long\fP", flags = O_RDONLY) failed, File
+name too long (36, ENAMETOOLONG) because pathname exceeds the system
+maximum path length (4096)
+.E)
+.TP 8n
+Filename length limit
+Some Unix variants have a limit on the number of bytes in each path
+component.  Some of them deal with this silently, and some give
+ENAMETOOLONG; the \*(n) library
+uses \f[I]pathconf\fP(3) _PC_NO_TRUNC to
+tell which.  If this error happens, the \*(n) library will state the limit
+in the error message, the limit is obtained from \f[I]pathconf\fP(3)
+_PC_NAME_MAX.
+Notice how the system limit is included in the error message.
+.E(
+.fi
+open(pathname = "\f[I]system7/only\-had\-14\-characters\fP", flags =
+O_RDONLY) failed, File name too long (36, ENAMETOOLONG) because
+"only\-had\-14\-characters" component is longer than the system limit (14)
+.E)
+.TP 8n
+Empty pathname
+In the original Unix, the empty pathname referred to the current
+directory.  Nowadays POSIX decrees that an empty pathname must not be
+resolved successfully.
+.E(
+.fi
+open(pathname = "", flags = O_RDONLY) failed, No such file or directory (2,
+ENOENT) because POSIX decrees that an empty pathname must not be resolved
+successfully
+.E)
+.SS Permissions
+The permission bits of a file consist of three groups of three bits.
+The first group of three is used when the
+effective user ID of the calling process equals the owner ID of the
+file.  The second group of three is used when the group ID of the file
+either equals the effective group ID of the calling process, or is
+one of the supplementary group IDs of the calling process.
+When neither holds, the third group is used.
+.E(
+.fi
+open(pathname = "/etc/passwd", flags = O_WRONLY) failed, Permission denied
+(13, EACCES) because the process does not have write permission to the
+"passwd" regular file in the pathname "/etc" directory, the process
+effective UID 1000 "pmiller" does not match the regular file owner 0 "root"
+so the owner permission mode "rw\-" is ignored, the others permission mode
+is "r\-\-", and the process is not privileged (does not have the DAC_OVERRIDE
+capability)
+.E)
+Some considerable space is given to this explanation, as most users do
+not know that this is how the permissions system works.  In particular:
+the owner, group and other permissions are exclusive, they are not
+\[lq]OR\[rq]ed together.
+.SH STRANGE AND INTERESTING SYSTEM CALLS
+The process of writing a specific error handler for each system call
+often reveals interesting quirks and boundary conditions,
+or obscure \f[I]errno\fP(3) values.
+.SS ENOMEDIUM, No medium found
+The act of copying a CD was the source of the title for this paper.
+.E(
+$ \f[CB]dd if=/dev/cdrom of=fubar.iso\fP
+dd: opening \[lq]/dev/cdrom\[rq]: No medium found
+$
+.E)
+The author wondered why his computer was telling him there is no such
+thing as a psychic medium.
+Quite apart from the fact that huge numbers of native English speakers are
+not even aware that \[lq]media\[rq] is a plural, let alone that
+\[lq]medium\[rq] is its singular, the string returned by
+\f[I]strerror\fP(3) for ENOMEDIUM is so terse as to be almost completely
+free of content.
+.PP
+When \f[I]open\fP(2) returns ENOMEDIUM it would be nice if
+the \*(n) library could
+expand a little on this, based on the type of drive it is.
+For example:
+.in +0.25i
+\&... because there is no disk in the floppy drive
+.br
+\&... because there is no disc in the CD\[hy]ROM drive
+.br
+\&... because there is no tape in the tape drive
+.br
+\&... because there is no memory stick in the card reader
+.PP
+And so it came to pass...
+.E(
+.fi
+open(pathname = "/dev/cdrom", flags = O_RDONLY) failed, No
+medium found (123, ENOMEDIUM) because there does not appear to be a disc in
+the CD\[hy]ROM drive
+.E)
+The trick, that the author was previously unaware of, was to open the
+device using the O_NONBLOCK flag, which will allow you to open a drive
+with no medium in it.  You then issue device specific \f[I]ioctl\fP(2)
+requests until you figure out what the heck it is.
+(Not sure if this is POSIX, but it also seems to work that way in BSD
+and Solaris, according to the \f[I]wodim\fP(1) sources.)
+.PP
+Note also the differing uses of \[lq]disk\[rq] and \[lq]disc\[rq] in context.
+The CD standard originated in France, but everything else has a \[lq]k\[rq].
+.SS EFAULT, Bad address
+Any system call that takes a pointer argument can return EFAULT.
+The \*(n) library can figure out which argument is at fault, and it does
+it without disturbing the process (or thread) signal handling.
+.PP
+When available, the \f[I]mincore\fP(2) system call is used, to ask if
+the memory region is valid.  It can return three results: mapped but not
+in physical memory, mapped and in physical memory, and not mapped.  When
+testing the validity of a pointer, the first two are \[lq]yes\[rq] and
+the last one is \[lq]no\[rq].
+.PP
+Checking C strings are more difficult, because instead of a pointer and
+a size, we only have a pointer.  To determine the size we would have to
+find the NUL, and that could segfault, catch\[hy]22.
+.PP
+To work around this, the \*(n) library uses the \f[I]lstat\fP(2) sysem
+call (with a known good second argument) to test C strings for validity.
+A failure return && errno == EFAULT is a \[lq]no\[rq], and anythng
+else is a \[lq]yes\[rq].  This, of course limits strings to PATH_MAX
+characters, but that usually isn't a problem for the \*(n) library,
+because that is almost always the longest strings it cares about.
+.SS EMFILE, Too many open files
+This error occurs when a process already has the maximum number of file
+descriptors open.  If the actual limit is to be printed, and
+the \*(n) library
+tries to, you can't open a file in \f[CW]/proc\fP to read what it is.
+.E(
+open_max = sysconf(_SC_OPEN_MAX);
+.E)
+This one wan't so difficult, there is a \f[I]sysconf\fP(3) way of
+obtaining the limit.
+.SS ENFILE, Too many open files in system
+This error occurs when the system limit on the total number of open files
+has been reached.  In this case there is no handy \f[I]sysconf\fP(3) way of
+obtain the limit.
+.PP
+Digging deeper, one may discover that
+on Linux there is a \f[CW]/proc\fP entry we could read to obtain this
+value.  Catch\[hy]22: we are out of file descriptors, so we can't open a
+file to read the limit.
+.PP
+On Linux there is a system call to obtain it, but it has no [e]glibc
+wrapper function, so you have to all it very carefully:
+.E(
+long
+explain_maxfile(void)
+{
+#ifdef __linux__
+    struct __sysctl_args args;
+    int32_t maxfile;
+    size_t maxfile_size = sizeof(maxfile);
+    int name[] = { CTL_FS, FS_MAXFILE };
+    memset(&args, 0, sizeof(struct __sysctl_args));
+    args.name = name;
+    args.nlen = 2;
+    args.oldval = &maxfile;
+    args.oldlenp = &maxfile_size;
+    if (syscall(SYS__sysctl, &args) >= 0)
+        return maxfile;
+#endif
+    return \-1;
+}
+.E)
+This permits the limit to be included in the error message, when available.
+.SS EINVAL \[lq]Invalid argument\[rq] \f[I]vs\fP \
+    ENOSYS \[lq]Function not implemented\[rq]
+Unsupported actions (such as \f[I]symlink\fP(2) on a FAT file system)
+are not reported consistently from one system call to the next.
+It is possible to have either EINVAL or ENOSYS returned.
+.PP
+As a result, attention must be paid to these error cases to get them right,
+particularly as the EINVAL could also be referring to problems with one or more
+system call arguments.
+.SS Note that \f[BI]errno\fP(3) is not always set
+There are times when it is necessary to read the [e]glibc sources
+to determine how and when errors are returned for some system calls.
+.TP 4n
+\f[I]feof\fP(3), \f[I]fileno\fP(3)
+It is often assumed that these functions cannot return an error.
+This is only true if the \f[I]stream\fP argument is valid,
+however they are capable of detecting an invalid pointer.
+.TP 4n
+\f[I]fpathconf\fP(3), \f[I]pathconf\fP(3)
+The return value of \f[I]fpathconf\fP(2) and \f[I]pathconf\fP(2) could
+legitimately be \-1, so it is necessary to see if \f[I]errno\fP(3) has
+been explicitly set.
+.TP 4n
+\f[I]ioctl\fP(2)
+The return value of \f[I]ioctl\fP(2) could legitimately be \-1, so it is
+necessary to see if \f[I]errno\fP(3) has been explicitly set.
+.TP 4n
+\f[I]readdir\fP(3)
+The return value of \f[I]readdir\fP(3) is NULL for both errors and
+end\[hy]of\[hy]file.  It is necessary to see if \f[I]errno\fP(3) has
+been explicitly set.
+.TP 4n
+\f[I]setbuf\fP(3), \f[I]setbuffer\fP(3), \f[I]setlinebuf\fP(3), \
+\f[I]setvbuf\fP(3)
+All but the last of these functions return void.
+And \f[I]setvbuf\fP(3) is only documented as returning \[lq]non\[hy]zero\[rq]
+on error.
+It is necessary to see if \f[I]errno\fP(3) has been explicitly set.
+.TP 4n
+\f[I]strtod\fP(3), \f[I]strtol\fP(3), \f[I]strtold\fP(3), \f[I]strtoll\fP(3), \
+\f[I]strtoul\fP(3), \f[I]strtoull\fP(3)
+These functions return 0 on error, but that is also a legitimate return value.
+It is necessary to see if \f[I]errno\fP(3) has been explicitly set.
+.TP 4n
+\f[I]ungetc\fP(3)
+While only a single character of backup is mandated by the ANSI C standard,
+it turns out that [e]glibc permits more...
+but that means it can fail with ENOMEM.
+It can also fail with EBADF if \f[I]fp\fP is bogus.
+Most difficult of all, if you pass EOF an error return occurs,
+but errno is not set.
+.PP
+The \*(n) library detects all of these errors correctly,
+even in cases where the error values are poorly documented, if at all.
+.SS ENOSPC, No space left on device
+When this error refers to a file on a file system,
+the \*(n) library
+prints the mount point of the file system with the problem.
+This can make the source of the error much clearer.
+.E(
+.fi
+write(fildes = 1 "example", data = 0xbfff2340, data_size = 5)
+failed, No space left on device (28, ENOSPC) because the file system
+containing fildes ("/home") has no more space for data
+.E)
+As more special device support is added, error messages are expected to
+include the device name and actual size of the device.
+.SS EROFS, Read\[hy]only file system
+When this error refers to a file on a file system,
+the \*(n) library
+prints the mount point of the file system with the problem.
+This can make the source of the error much clearer.
+.PP
+As more special device support is added,
+error messages are expected to include the device name and type.
+.E(
+.fi
+open(pathname = "/dev/fd0", O_RDWR, 0666) failed, Read\[hy]only file system
+(30, EROFS) because the floppy disk has the write protect tab set
+.E)
+.PP
+\&...because a CD\[hy]ROM is not writable
+.br
+\&...because the memory card has the write protect tab set
+.br
+\&...because the \[12] inch magnetic tape does not have a write ring
+.SS rename
+The \f[I]rename\fP(2) system call is used to change the location or name
+of a file, moving it between directories if required.
+If the destination pathname already exists it will be atomically replaced,
+so that there is no point at which another process attempting to access
+it will find it missing.
+.PP
+There are limitations, however: you can only rename a directory on top
+of another directory if the destination directory is not empty.
+.E(
+.fi
+rename(oldpath = "foo", newpath = "bar") failed, Directory not
+empty (39, ENOTEMPTY) because newpath is not an empty directory; that is,
+it contains entries other than "." and ".."
+.E)
+You can't rename a directory on top of a non\[hy]directory, either.
+.E(
+.fi
+rename(oldpath = "foo", newpath = "bar") failed, Not a
+directory (20, ENOTDIR) because oldpath is a directory, but newpath is a
+regular file, not a directory
+.E)
+Nor is the reverse allowed
+.E(
+.fi
+rename(oldpath = "foo", newpath = "bar") failed, Is a
+directory (21, EISDIR) because newpath is a directory, but oldpath is a
+regular file, not a directory
+.E)
+.PP
+This, of course, makes the \*(n) library's job more complicated, because
+the \f[I]unlink\fP(2) or \f[I]rmdir\fP(2) system call is called
+implicitly by \f[I]rename\fP(2), and so all of the \f[I]unlink\fP(2) or
+\f[I]rmdir\fP(2) errors must be detected and handled, as well.
+.SS dup2
+The \f[I]dup2\fP(2) system call is used to create a second file
+descriptor that references the same object as the first file descriptor.
+Typically this is used to implement shell input and output redirection.
+.PP
+The fun thing is that, just as \f[I]rename\fP(2) can atomically rename a
+file on top of an existing file and remove the old file, \f[I]dup2\fP(2)
+can do this onto an already\[hy]open file descriptor.
+.PP
+Once again, this makes the \*(n) library's job more complicated, because the
+\f[I]close\fP(2) system call is called implicitly by \f[I]dup2\fP(2),
+and so all of \f[I]close\fP(2)'s errors must be detected and handled, as
+well.
+.SH ADVENTURES IN IOCTL SUPPORT
+The \f[I]ioctl\fP(2) system call provides device driver authors with
+a way to communicate with user\[hy]space that doesn't fit within the
+existing kernel API.
+See \f[I]ioctl_list\fP(2).
+.SS Decoding Request Numbers
+From a cursory look at the \f[I]ioctl\fP(2) interface, there would appear to
+be a large but finite number of possible \f[I]ioctl\fP(2) requests.
+Each different \f[I]ioctl\fP(2) request is effectively another system call,
+but without any type\[hy]safety at all \- the compiler can't help
+a programmer get these right.
+This was probably the motivation behind \f[I]tcflush\fP(3) and friends.
+.PP
+The initial impression is that you could decode \f[I]ioctl\fP(2)
+requests using a huge switch statement.  This turns out to be infeasible
+because one very rapidly discovers that it is impossible to include all of the
+necessary system headers defining the various \f[I]ioctl\fP(2) requests,
+because they have a hard time playing nicely with each other.
+.PP
+A deeper look reveals that there is a range of \[lq]private\[rq] request
+numbers, and device driver authors are encouraged to use them.
+This means that there is a far larger possible set of requests,
+with ambiguous request numbers, than are immediately apparent.
+Also, there are some historical ambiguities as well.
+.PP
+We already knew that the switch was impractical, but now we know that to
+select the appropriate request name and explanation we must consider not
+only the request number but also the file descriptor.
+.PP
+The implementation of \f[I]ioctl\fP(2) support within
+the \*(n) library is to
+have a table of pointers to \f[I]ioctl\fP(2) request descriptors.  Each
+of these descriptors includes an optional pointer to a disambiguation
+function.
+.PP
+Each request is actually implemented in a separate source file, so
+that the necessary include files are relieved of the obligation to play
+nicely with others.
+.SS Representation
+The philosophy behind the \*(n) library
+is to provide as much information as
+possible, including an accurate representation of the system call.  In
+the case of \f[I]ioctl\fP(2) this means printing the correct request
+number (by name) and also a correct (or at least useful) representation
+of the third argument.
+.PP
+The \f[I]ioctl\fP(2) prototype looks like this:
+.E(
+int ioctl(int fildes, int request, ...);
+.E)
+which should have your type\[hy]safety alarms going off.
+Internal to [e]glibc, this is turned into a variety of forms:
+.E(
+int __ioctl(int fildes, int request, long arg);
+int __ioctl(int fildes, int request, void *arg);
+.E)
+and the Linux kernel syscall interface expects
+.E(
+.fi
+.\" Linux: include/linux/syscalls.h
+asmlinkage long sys_ioctl(unsigned int fildes, unsigned int request,
+unsigned long arg);
+.E)
+The extreme variability of the third argument is a challenge,
+when the \*(n) library
+tries to print a representation of that third argument.
+However, once the request number has been disambiguated,
+each entry in the the \*(n) library's ioctl table
+has a custom \f[CW]print_data\fP function (OO done manually).
+.SS Explanations
+There are fewer problems determining the explanation to be used.
+Once the request number has been disambiguated,
+each entry in the \*(n) library's ioctl table
+has a custom \f[CW]print_explanation\fP function (again, OO done manually).
+.PP
+Unlike section 2 and section 3 system calls,
+most \f[I]ioctl\fP(2) requests have no errors documented.
+This means, to give good error descriptions,
+it is necessary to read kernel sources to discover
+.TP 2n
+\[bu]
+what \f[I]errno\fP(3) values may be returned, and
+.TP 2n
+\[bu]
+the cause of each error.
+.PP
+Because of the OO nature of function call dispatching withing the
+kernel, you need to read \f[I]all\fP sources implementing that
+\f[I]ioctl\fP(2) request, not just the generic implementation.
+It is to be expected that different kernels will have different error
+numbers and subtly different error causes.
+.SS EINVAL \f[I]vs\fP ENOTTY
+The situation is even worse for \f[I]ioctl\fP(2) requests than for
+system calls, with EINVAL and ENOTTY both being used to indicate that
+an \f[I]ioctl\fP(2) request is inappropriate in that context, and
+occasionally ENOSYS, ENOTSUP and EOPNOTSUPP (meant to be used for sockets)
+as well.
+There are comments in the Linux kernel sources that seem to indicate a
+progressive cleanup is in progress.
+For extra chaos, BSD adds ENOIOCTL to the confusion.
+.PP
+As a result, attention must be paid to these error cases to get them right,
+particularly as the EINVAL could also be referring to problems with one or more
+system call arguments.
+.SS intptr_t
+The C99 standard defines an integer type that is guaranteed to be able to
+hold any pointer without representation loss.
+.PP
+The above function syscall prototype would be better written
+.E(
+.fi
+.\" Linux: include/linux/syscalls.h
+long sys_ioctl(unsigned int fildes, unsigned int request, intptr_t arg);
+.E)
+The problem is the cognitive dissonance induced by device\[hy]specific or
+file\[hy]system\[hy]specific \f[I]ioctl\fP(2) implementations, such as:
+.E(
+.fi
+long vfs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
+.E)
+The majority of \f[I]ioctl\fP(2)
+requests actually have an \f[CW]int *arg\fP third argument.
+But having it declared \f[CW]long\fP leads to code
+treating this as \f[CW]long *arg\fP.
+This is harmless on 32\[hy]bits (\f[CW]sizeof(long) == sizeof(int)\fP)
+but nasty on 64\[hy]bits (\f[CW]sizeof(long) != sizeof(int)\fP).
+Depending on the endian\[hy]ness, you do or don't get the value you expect,
+but you \f[I]always\fP get a memory scribble or stack scribble as well.
+.\" .PP
+.\" Several such bugs have been uncovered to date.
+.PP
+Writing all of these as
+.E(
+int ioctl(int fildes, int request, ...);
+int __ioctl(int fildes, int request, intptr_t arg);
+.fi
+long sys_ioctl(unsigned int fildes, unsigned int request, intptr_t arg);
+.br
+long vfs_ioctl(struct file *filp, unsigned int cmd, intptr_t arg);
+.E)
+emphasizes that the integer is only an integer to represent
+a quantity that is almost always an unrelated pointer type.
+.SH CONCLUSION
+Use libexplain, your users will like it.
+.SH COPYRIGHT
+.if n .ds C) (C)
+.if t .ds C) \(co
+.so etc/version.so
+\*(n) version \*(v)
+.br
+Copyright
+\*(C)
+\*(Y)
+Peter Miller
+.SH AUTHOR
+Written by Peter Miller <pmiller@opensource.org.au>

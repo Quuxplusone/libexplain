@@ -1,0 +1,56 @@
+.\"
+.\" libexplain - a library of system-call-specific strerror replacements
+.\" Copyright (C) 2012 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by the Free
+.\" Software Foundation; either version 3 of the License, or (at your option)
+.\" any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+.\" or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+.\" for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_filename_from_fildes
+.TH explain_filename_from_fildes 3
+.SH NAME
+explain_filename_from_fildes \- obtain filename from file descriptor
+.if require_index \{
+.XX "explain_filename_from_fildes(3)" "obtain filename from file descriptor"
+.\}
+.SH SYNOPSIS
+#include <libexplain/filename.h>
+.sp 0.3
+int explain_filename_from_fildes(int fildes, char *data, size_t data_size);
+.sp 0.3
+int explain_filename_from_stream(FILE *stream, char *data, size_t data_size);
+.SH DESCRIPTION
+The \f[I]explain_filename_from_fildes\fP function may be used to
+obtain the name of the file associated with the file descriptor.
+.PP
+The \f[I]explain_filename_from_stream\fP function may be used to
+obtain the name of the file associated with a file stream.
+.PP
+The filename is returned in the array pointed to by \f[I]data\fP.
+The filename will always be NUL terminated.
+If the returned filename is longer than \f[I]data_size\fP, it will be silently
+truncated; a size of at least (PATH_MAX + 1) is suggested.
+.PP
+On success, returns zero.
+If the file name cannot be determined, returns \-1 (but does \f[B]not\fP
+set \f[I]errno\fP.)
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2012 Peter Miller
+.SH AUTHOR
+Written by Peter Miller <pmiller@opensource.org.au>
+.\" vim: set ts=8 sw=4 et :

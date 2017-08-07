@@ -1,0 +1,37 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2010 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 12
+Another test 33 false negative has been fixed.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 11
+There is a new \[lq]hanging\[hy]indent\[rq] option, that can be set from the
+\f[CW]EXPLAIN_OPTION\fP environment variable.  It defaults to zero for
+backwards compatibility.  Applications may set it using the
+\f[I]explain_option_hanging_indent_set\fP(3) function.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.33 (2010\[hy]Jul\[hy]04)
+.\" vim: set ts=8 sw=4 et

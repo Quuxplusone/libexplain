@@ -1,0 +1,49 @@
+#
+# libexplain - Explain errno values returned by libc functions
+# Copyright (C) 2010 Peter Miller
+# Written by Peter Miller <pmiller@opensource.org.au>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+0. Create the build environment
+
+   sudo pbuilder --create
+
+1. After building D001 you need to build the software as yourself, in a
+   Debian Sid chroot, using pbuilder.
+
+   aecd -bl -p libexplain.cur
+   sudo pbuilder --build web-site/debian/*.D001-1.dsc
+
+2. The results need to be signed
+
+   mkdir /tmp/d
+   cp /var/cache/pbuilder/result/*explain*D001* /tmp/d
+   # watch out for previous releases
+   cd /tmp/d
+   debsign *.changes
+
+3. Now upload the files to Debian
+
+   dput *.changes
+   cd
+   rm -rf /tmp/d
+
+   (Note that .dput.cf has default_host_main=ftp-master set, NOT ubuntu.)
+
+4. You should receive an email acknowledging the upload within 24 hours.
+   To stop the "Debian: Closes: NNNN" lines being carried forward,
+   use the following command:
+
+   aeca aemakegen:debian:accepted=true --delta 1

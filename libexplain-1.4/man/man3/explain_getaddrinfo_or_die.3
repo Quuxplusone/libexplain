@@ -1,0 +1,82 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008, 2009, 2011 Peter Miller
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or (at
+.\" your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_getaddrinfo_or_die
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_getaddrinfo_or_die 3
+.SH NAME
+explain_getaddrinfo_or_die \- network address translation and report errors
+.if require_index \{
+.XX "explain_getaddrinfo_or_die(3)" \
+    "network address translation and report errors"
+.\}
+.SH SYNOPSIS
+#include <libexplain/getaddrinfo.h>
+.sp 0.3
+void explain_getaddrinfo_or_die(const char *node, const char *service,
+const struct addrinfo *hints, struct addrinfo **res);
+.SH DESCRIPTION
+The \f[B]explain_getaddrinfo_or_die\fP function is used to
+call the \f[I]getaddrinfo\fP(3) system call.  On failure, an
+explanation will be printed to \f[I]stderr\fP, obtained from
+\f[I]explain_getaddrinfo\fP(3), and then the process terminates by
+calling \f[CW]exit(EXIT_FAILURE)\fP.
+.PP
+This function is intended to be used in a fashion
+similar to the following example:
+.RS
+.ft CW
+.nf
+explain_getaddrinfo_or_die(node, service, hints, res);
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]node\fP
+The node, exactly as to be passed to the \f[I]getaddrinfo\fP(3) system call.
+.TP 8n
+\f[I]service\fP
+The service, exactly as to be passed to the \f[I]getaddrinfo\fP(3) system call.
+.TP 8n
+\f[I]hints\fP
+The hints, exactly as to be passed to the \f[I]getaddrinfo\fP(3) system call.
+.TP 8n
+\f[I]res\fP
+The res, exactly as to be passed to the \f[I]getaddrinfo\fP(3) system call.
+.TP 8n
+Returns:
+This function only returns on success.
+On failure, prints an explanation and exits.
+.\" ----------------------------------------------------
+.SH SEE ALSO
+.TP 8n
+\f[I]getaddrinfo\fP(3)
+network address and service translation
+.TP 8n
+\f[I]explain_getaddrinfo\fP(3)
+explain \f[I]getaddrinfo\fP(3) errors
+.TP 8n
+\f[I]exit\fP(2)
+terminate the calling process
+.\" ----------------------------------------------------
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2008 Peter Miller

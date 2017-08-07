@@ -1,0 +1,79 @@
+#
+# libexplain - Explain errno values returned by libc functions
+# Copyright (C) 2013 Peter Miller
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 3 of the License, or (at your
+# option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+Include: bits/ioctls.h
+#
+# Requests that don't alter system state, device state or media state.
+# These are safe to probe, and will not cause probems or damage.
+Get:
+ SIOCGARP
+ SIOCGIFADDR
+ SIOCGIFBR
+ SIOCGIFBRDADDR
+ SIOCGIFCONF
+ SIOCGIFCOUNT
+ SIOCGIFDSTADDR
+ SIOCGIFENCAP
+ SIOCGIFFLAGS
+ SIOCGIFHWADDR
+ SIOCGIFINDEX
+ SIOCGIFMAP
+ SIOCGIFMEM
+ SIOCGIFMETRIC
+ SIOCGIFMTU
+ SIOCGIFNAME
+ SIOCGIFNETMASK
+ SIOCGIFPFLAGS
+ SIOCGIFSLAVE
+ SIOCGIFTXQLEN
+ SIOCGRARP
+#
+# These are requests that alter the system state.
+Set:
+ SIOCADDDLCI
+ SIOCADDMULTI
+ SIOCADDRT
+ SIOCDARP
+ SIOCDELDLCI
+ SIOCDELMULTI
+ SIOCDELRT
+ SIOCDEVPRIVATE
+ SIOCDIFADDR
+ SIOCDRARP
+ SIOCPROTOPRIVATE
+ SIOCRTMSG
+ SIOCSARP
+ SIOCSIFADDR
+ SIOCSIFBR
+ SIOCSIFBRDADDR
+ SIOCSIFDSTADDR
+ SIOCSIFENCAP
+ SIOCSIFFLAGS
+ SIOCSIFHWADDR
+ SIOCSIFHWBROADCAST
+ SIOCSIFLINK
+ SIOCSIFMAP
+ SIOCSIFMEM
+ SIOCSIFMETRIC
+ SIOCSIFMTU
+ SIOCSIFNAME
+ SIOCSIFNETMASK
+ SIOCSIFPFLAGS
+ SIOCSIFSLAVE
+ SIOCSIFTXQLEN
+ SIOCSRARP
+# vim: set ts=8 sw=4 et :

@@ -1,0 +1,80 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2009-2011 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_exit
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_exit 3
+.SH NAME
+explain_exit \- print an explanation of exit status before exiting
+.if require_index \{
+.XX "explain_exit(3)" "print an explanation of exit status before exiting"
+.\}
+.SH SYNOPSIS
+#include <libexplain/libexplain.h>
+.sp 0.3
+void explain_exit_on_exit(void);
+.br
+void explain_exit_on_error(void);
+.br
+void explain_exit_cancel(void);
+.SH DESCRIPTION
+The \f[I]explain_exit_on_exit\fP function may be used to have the
+calling program print an explanation of its exit status (the value
+passed to \f[I]exit\fP(3) or the return value from \f[I]main\fP)
+immediately before it terminates.
+.PP
+The \f[I]explain_exit_on_error\fP function may be used to have the
+calling program print an explanation of its exit status immediately
+before it terminates, if that exit status is not EXIT_SUCCESS.
+.PP
+The \f[I]explain_exit_cancel\fP function may be used to
+cancel the effect of the \f[I]explain_exit_on_exit\fP or
+\f[I]explain_exit_on_error\fP function.
+.PP
+These functions may be called multiple times, and in any order.  The
+last called has precedence.  The explanation will never be printed more
+than once.
+.SS Call Exit As Normal
+In order to have the explanation printed, simply call \f[I]exit\fP(3)
+as normal, or return from \f[I]main\fP as normal.
+Do not call any of these functions in order to exit your program,
+they are called before you exit your program.
+.SS Caveat
+This functionality is only available on systems with the
+\f[I]on_exit\fP(3) system call.
+Unfortunately, the \f[I]atexit\fP(3) system call is not sufficiently
+capable, as it does not pass the exit status to the registered function.
+.SH SEE ALSO
+.TP 8n
+\f[I]exit\fP(3)
+cause normal process termination
+.TP
+\f[I]atexit\fP(3)
+register a function to be called at normal process termination
+.TP
+\f[I]on_exit\fP(3)
+register a function to be called at normal process termination
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2009 Peter Miller
+.SH AUTHOR
+Written by Peter Miller <pmiller@opensource.org.au>

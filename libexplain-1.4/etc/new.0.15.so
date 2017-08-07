@@ -1,0 +1,47 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2009, 2010 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 22, 19, 17
+The EROFS and ENOMEDIUM explanations now greatly improved.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 24
+A number of build problems and false negatives have been fixed
+on x86_64 architecture.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 21, 20
+The Linux floppy disk and CD\[hy]ROM ioctl requests are now supported.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 16, 15, 14, 13, 12
+Explanations are now available for the errors reported by the
+\f[I]getdomainname\fP(2), \f[I]readv\fP(2), \f[I]setdomainname\fP(2),
+\f[I]ustat\fP(2) and \f[I]writev\fP(2) system calls.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.15 (2009\[hy]Jul\[hy]26)
+.\" vim: set ts=8 sw=4 et

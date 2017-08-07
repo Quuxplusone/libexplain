@@ -1,0 +1,65 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008, 2009, 2011 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_chmod_or_die
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_chmod_or_die 3
+.SH NAME
+explain_chmod_or_die \- change permissions of a file and report errors
+.if require_index \{
+.XX "explain_chmod_or_die(3)" \
+                                "change permissions of a file and report errors"
+.\}
+.SH SYNOPSIS
+#include <libexplain/chmod.h>
+.br
+void explain_chmod_or_die(const char *pathname, int mode);
+.SH DESCRIPTION
+The explain_chmod_or_die function is used to call the
+\f[I]chmod\fP(2) system call.  On failure an explanation wiil be printed
+to stderr, obtained from \f[I]explain_chmod\fP(3), and the the
+process terminates by calling \f[CW]exit(EXIT_FAILURE)\fP.
+.PP
+This function is intended to be used in a fashion similar to the
+following example:
+.RS
+.ft CW
+.nf
+explain_chmod_or_die(pathname, mode);
+.fi
+.ft R
+.RE
+.TP 8n
+\fIpathname\fP
+The pathname, exactly as to be passed to the \f[I]chmod\fP(2) system call.
+.TP 8n
+\fImode\fP
+The mode, exactly as to be passed to the \f[I]chmod\fP(2) system call.
+.TP 8n
+Returns:
+This function only returns on success.
+On failure, prints an explanation and exit(EXIT_FAILURE)s.
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2008 Peter Miller
+.SH AUTHOR
+Written by Peter Miller <pmiller@opensource.org.au>

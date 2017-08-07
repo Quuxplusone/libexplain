@@ -1,0 +1,62 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008-2010 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 12, 17, 21, 22, 23, 38, 45, 46, 48, 54
+Coverage now includes
+\f[I]accept\fP(2),
+\f[I]bind\fP(2),
+\f[I]connect\fP(2),
+\f[I]dup2\fP(2),
+\f[I]fchown\fP(2),
+\f[I]fdopen\fP(3),
+\f[I]fpathconf\fP(2),
+\f[I]fputc\fP(2),
+\f[I]futimes\fP(2),
+\f[I]getaddrinfo\fP(2),
+\f[I]getcwd\fP(2),
+\f[I]getrlimit\fP(2),
+\f[I]listen\fP(2),
+\f[I]pathconf\fP(2),
+\f[I]putc\fP(2),
+\f[I]putchar\fP(2),
+\f[I]select\fP(2).
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 28, 29, 32, 33, 40, 43, 44
+Internationalization has been improved.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 25
+The thread safety of the code has been improved.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 18
+The code is now able to be compiled on OpenBSD.  The test suite still gives
+many false negatives, due to differences in \f[I]strerror\fP(3) results.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.3 (2008\[hy]Nov\[hy]23)
+.\" vim:ts=8:sw=4:et

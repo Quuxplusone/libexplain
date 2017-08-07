@@ -1,0 +1,56 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008, 2010 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 40, 27, 39, 36, 35, 34, 33, 31, 26, 30, 29, 24, 20, 15, 13, 12
+Cover has been extended to include
+\f[I]closedir\fP(3),
+\f[I]execve\fP(2),
+\f[I]ferror\fP(3),
+\f[I]fgetc\fP(3),
+\f[I]fgets\fP(3),
+\f[I]fork\fP(2),
+\f[I]fread\fP(3),
+\f[I]getc\fP(3),
+\f[I]gettimeofday\fP(2),
+\f[I]lchown\fP(2),
+\f[I]socket\fP(2),
+\f[I]system\fP(3),
+\f[I]utime\fP(2),
+\f[I]wait3\fP(2),
+\f[I]wait4\fP(2),
+\f[I]wait\fP(2),
+\f[I]waitpid\fP(2),
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 25, 21, 18, 19
+More internationalization support has been added.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 22
+A bug has been fixed in the C++ insulation.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.2 (2008\[hy]Nov\[hy]11)
+.\" vim:ts=8:sw=4:et

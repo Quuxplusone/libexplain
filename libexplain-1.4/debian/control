@@ -1,0 +1,53 @@
+Source: libexplain
+Section: devel
+Priority: optional
+Maintainer: Peter Miller <pmiller@opensource.org.au>
+Homepage: http://libexplain.sourceforge.net/
+DM-Upload-Allowed: yes
+Build-Depends: bison, debhelper (>= 5), ghostscript, groff, libacl1-dev,
+ libcap-dev, libtool, linux-libc-dev, lsof
+Standards-Version: 3.9.3
+
+Package: explain
+Architecture: any
+Description: utility to explain system call errors
+ This package provides an explain(1) command to explain Unix and Linux system
+ call errors, after the fact.
+Depends: ${misc:Depends}, ${shlibs:Depends}, libexplain51, lsof
+
+Package: libexplain-doc
+Architecture: all
+Section: doc
+Description: a library of system-call-specific strerror repl
+ This package provides a library which may be used to explain Unix and Linux
+ system call errors.  The library is not quite a drop-in replacement for
+ strerror, but it comes close, with each system call having a dedicated
+ libexplain function.
+Depends: ${misc:Depends}
+
+Package: libexplain51
+Section: libs
+Architecture: any
+Description: a library of system-call-specific strerror repl
+ library of syscall-specific strerror replacements
+Depends: ${misc:Depends}, ${shlibs:Depends}, lsof
+
+Package: libexplain51-dbg
+Section: debug
+Priority: extra
+Architecture: any
+Description: a library of system-call-specific strerror repl - debugging symbols
+ library of syscall-specific strerror replacements
+Depends: ${misc:Depends}, ${shlibs:Depends}, lsof,
+ libexplain51 (= ${binary:Version})
+
+Package: libexplain-dev
+Section: libdevel
+Architecture: any
+Description: a library of system-call-specific strerror repl - development files
+ This package provides a library which may be used to explain Unix and Linux
+ system call errors.  The library is not quite a drop-in replacement for
+ strerror, but it comes close, with each system call having a dedicated
+ libexplain function.
+Depends: ${misc:Depends}, ${shlibs:Depends}, libexplain51 (= ${binary:Version}),
+ lsof

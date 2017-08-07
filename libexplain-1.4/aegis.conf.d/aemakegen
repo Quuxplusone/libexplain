@@ -1,0 +1,141 @@
+#
+# libexplain - Explain errno values returned by libc functions
+# Copyright (C) 2008-2014 Peter Miller
+# Written by Peter Miller <pmiller@opensource.org.au>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+project_specific =
+[
+    {
+        name = "aede-policy:version-info:library";
+        value = "libexplain/libexplain.a";
+    },
+    {
+        name = "aemakegen:version-info";
+        value = "56:0:5";
+    },
+    {
+        name = "aemakegen:debian:copyright";
+        value = "false";
+    },
+    {
+        name = "aemakegen:debian:homepage";
+        value = "http://libexplain.sourceforge.net/";
+    },
+    {
+        name = "aemakegen:debian:maintainer";
+        value = "Peter Miller <pmiller@opensource.org.au>";
+    },
+    {
+        name = "aemakegen:debian:priority";
+        value = "optional";
+    },
+    {
+        name = "aemakegen:debian:section";
+        value = "devel";
+    },
+    {
+        name = "aemakegen:debian:description:explain";
+        value = "utility to explain system call errors";
+    },
+    {
+        name = "aemakegen:debian:extended-description:explain";
+        value =
+            "This package provides an explain(1) command to explain "
+            "Unix and Linux system call errors, after the fact."
+            ;
+    },
+    {
+        name = "aemakegen:rpm-spec:description:explain";
+        value =
+            "This package provides a command to explain Unix and Linux "
+            "system call errors, after the fact."
+            ;
+    },
+    {
+        name = "aemakegen:debian:description:libexplain";
+        value = "library of syscall-specific strerror replacements";
+    },
+    {
+        name = "aemakegen:rpm-spec:summary";
+        value = "library of syscall-specific strerror replacements";
+    },
+    {
+        name = "aemakegen:rpm-spec:license";
+        value = "LGPL, GPL";
+    },
+    {
+        name = "aemakegen:debian:extended-description:libexplain";
+        value =
+            "This package provides a library which may be used to "
+            "explain Unix and Linux system call errors.  The library is "
+            "not quite a drop-in replacement for strerror, but it comes "
+            "close, with each system call having a dedicated libexplain "
+            "function."
+            ;
+    },
+    {
+        name = "aemakegen:rpm-spec:description:libexplain-libs";
+        value =
+            "This package provides a library which may be used to "
+            "explain Unix and Linux system call errors.  The library is "
+            "not quite a drop-in replacement for strerror, but it comes "
+            "close, with each system call having a dedicated libexplain "
+            "function."
+            ;
+    },
+    {
+        name = "aemakegen:rpm-spec:description:libexplain-devel";
+        value =
+            "This package contains static libraries and header files "
+            "for compiling applications that use libexplain to explain "
+            "Unix and Linux system call errors."
+            ;
+    },
+    {
+        name = "aemakegen:debian:build-depends";
+        value = @
+            libcap-dev,
+            libacl1-dev,
+            bison,
+            groff,
+            linux-libc-dev,
+            lsof
+            @;
+    },
+    {
+        name = "aemakegen:rpm-spec:build-requires";
+        value = "libcap-devel, bison, groff, glibc-devel, lsof";
+    },
+    {
+        name = "aemakegen:debian:depends";
+        value = "lsof";
+    },
+    {
+        name = "aemakegen:debian:dm-upload-allowed";
+        value = "true";
+    },
+    {
+        name = "aemakegen:libtool";
+        value = "true";
+    },
+    {
+        name = "aemakegen:libtool-la";
+        value = "false";
+    },
+];
+
+/* vim: set ts=8 sw=4 et : */

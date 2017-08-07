@@ -1,0 +1,218 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008, 2009, 2011 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_chdir
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_chdir 3
+.SH NAME
+explain_chdir \- explain chdir(2) errors
+.if require_index \{
+.XX "explain_chdir(3)" "explain chdir(2) errors"
+.\}
+.SH SYNOPSIS
+#include <libexplain/chdir.h>
+.br
+const char *explain_chdir(const char *pathname);
+.br
+void explain_message_chdir(char *message, int message_size,
+const char *pathname);
+.br
+const char *explain_errno_chdir(int errnum, const char *pathname);
+.br
+void explain_message_errno_chdir(char *message, int message_size, int errnum,
+const char *pathname);
+.SH DESCRIPTION
+These function may be used to obtain explanations of
+\f[I]chdir\fP(2) errors.
+.\" ------------------------------------------------------------------------
+.SS explain_chdir
+const char *explain_chdir(const char *pathname);
+.PP
+The explain_chdir function is used to obtain an explanation of an
+error returned by the \f[I]chdir\fP(2) system call.  The least the
+message will contain is the value of \f[CW]strerror(errno)\fP, but
+usually it will do much better, and indicate the underlying cause in
+more detail.
+.PP
+The \f[I]errno\fP global variable will be used to obtain the error value
+to be decoded.
+.PP
+This function is intended to be used in a fashion similar to the
+following example:
+.RS
+.ft CR
+.nf
+if (chdir(pathname) < 0)
+{
+    fprintf(stderr, '%s\n', explain_chdir(pathname));
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]pathname\fP
+The original pathname, exactly as passed to the \f[I]chdir\fP(2) system call.
+.TP 8n
+Returns:
+The message explaining the error.  This message buffer is shared by all
+libexplain functions which do not supply a buffer in their argument
+list.  This will be overwritten by the next call to any libexplain
+function which shares this buffer, including other threads.
+.PP
+\f[B]Note:\fP
+This function is \f[B]not\fP thread safe, because it shares a return
+buffer across all threads, and many other functions in this library.
+.\" ------------------------------------------------------------------------
+.SS explain_errno_chdir
+const char *explain_errno_chdir(int errnum, const char *pathname);
+.PP
+The explain_errno_chdir function is used to obtain an explanation
+of an error returned by the \f[I]chdir\fP(2) system call.  The least
+the message will contain is the value of \f[CW]strerror(errnum)\fP, but
+usually it will do much better, and indicate the underlying cause in
+more detail.
+.PP
+This function is intended to be used in a fashion similar to the
+following example:
+.RS
+.ft CR
+.nf
+if (chdir(pathname) < 0)
+{
+    int err = errno;
+    fprintf(stderr, '%s\n', explain_errno_chdir(err, pathname));
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]errnum\fP
+The error value to be decoded, usually obtained from the \f[I]errno\fP
+global variable just before this function is called.  This is necessary
+if you need to call \f[B]any\fP code between the system call to be
+explained and this function, because many libc functions will alter the
+value of \f[I]errno\fP.
+.TP 8n
+\f[I]pathname\fP
+The original pathname, exactly as passed to the \f[I]chdir\fP(2) system call.
+.TP 8n
+Returns:
+The message explaining the error.  This message buffer is shared by all
+libexplain functions which do not supply a buffer in their argument
+list.  This will be overwritten by the next call to any libexplain
+function which shares this buffer, including other threads.
+.PP
+\f[B]Note:\fP
+This function is \f[B]not\fP thread safe, because it shares a return
+buffer across all threads, and many other functions in this library.
+.\" ------------------------------------------------------------------------
+.SS explain_message_chdir
+void explain_message_chdir(char *message, int message_size,
+const char *pathname);
+.PP
+The explain_message_chdir function is used to obtain an explanation
+of an error returned by the \f[I]chdir\fP(2) system call.  The least
+the message will contain is the value of \f[CW]strerror(errno)\fP, but
+usually it will do much better, and indicate the underlying cause in
+more detail.
+.PP
+The \f[I]errno\fP global variable will be used to obtain the error value
+to be decoded.
+.PP
+This function is intended to be used in a fashion similar to the
+following example:
+.RS
+.ft CR
+.nf
+if (chdir(pathname) < 0)
+{
+    char message[3000];
+    explain_message_chdir(message, sizeof(message), pathname);
+    fprintf(stderr, '%s\n', message);
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]message\fP
+The location in which to store the returned message.  Because a message
+return buffer has been supplied, this function is thread safe.
+.TP 8n
+\f[I]message_size\fP
+The size in bytes of the location in which to store the returned message.
+.TP 8n
+\f[I]pathname\fP
+The original pathname, exactly as passed to the \f[I]chdir\fP(2) system call.
+.\" ------------------------------------------------------------------------
+.SS explain_message_errno_chdir
+void explain_message_errno_chdir(char *message, int message_size, int errnum,
+const char * pathname);
+.PP
+The explain_message_errno_chdir function is used to obtain
+an explanation of an error returned by the \f[I]chdir\fP(2)
+system call.  The least the message will contain is the value of
+\f[CW]strerror(errnum)\fP, but usually it will do much better, and
+indicate the underlying cause in more detail.
+.PP
+This function is intended to be used in a fashion similar to the
+following example:
+.RS
+.ft CR
+.nf
+if (chdir(pathname) < 0)
+{
+    int err = errno;
+    char message[3000];
+    explain_message_errno_chdir(message, sizeof(message), err,
+        pathname);
+    fprintf(stderr, '%s\n', message);
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.RE
+.TP 8n
+\f[I]message\fP
+The location in which to store the returned message.  Because a message
+return buffer has been supplied, this function is thread safe.
+.TP 8n
+\f[I]message_size\fP
+The size in bytes of the location in which to store the returned message.
+.TP
+\f[I]errnum\fP
+The error value to be decoded, usually obtained from the \f[I]errno\fP
+global variable just before this function is called.  This is necessary
+if you need to call \f[B]any\fP code between the system call to be
+explained and this function, because many libc functions will alter the
+value of \f[I]errno\fP.
+.TP 8n
+\f[I]pathname\fP
+The original pathname, exactly as passed to the \f[I]chdir\fP(2) system call.
+.\" ------------------------------------------------------------------------
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2008 Peter Miller
+.SH AUTHOR
+Written by Peter Miller <pmiller@opensource.org.au>

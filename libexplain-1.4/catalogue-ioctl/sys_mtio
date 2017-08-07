@@ -1,0 +1,74 @@
+#
+# libexplain - Explain errno values returned by libc functions
+# Copyright (C) 2013 Peter Miller
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 3 of the License, or (at your
+# option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+Include: sys/mtio.h
+#
+# Requests that don't alter system state, device state or media state.
+# These are safe to probe, and will not cause probems or damage.
+Get:
+ MTIOCGET
+ MTIOCGETCONFIG
+ MTIOCPOS
+#
+# These are requests that alter the system state.
+Set:
+ MTIOCSETCONFIG
+ MTIOCTOP
+ MT_ISARCHIVESC499
+ MT_ISARCHIVE_2060L
+ MT_ISARCHIVE_2150L
+ MT_ISARCHIVE_5945L2
+ MT_ISARCHIVE_VP60I
+ MT_ISCMSJ500
+ MT_ISDDS1
+ MT_ISDDS2
+ MT_ISEVEREX_FT40A
+ MT_ISFTAPE_FLAG
+ MT_ISFTAPE_UNKNOWN
+ MT_ISQIC02
+ MT_ISQIC02_ALL_FEATURES
+ MT_ISSCSI1
+ MT_ISSCSI2
+ MT_ISTDC3610
+ MT_ISTEAC_MT2ST
+ MT_ISUNKNOWN
+ MT_ISWT5099EEN24
+ MT_ISWT5150
+ MT_ST_ASYNC_WRITES
+ MT_ST_AUTO_LOCK
+ MT_ST_BLKSIZE_MASK
+ MT_ST_BOOLEANS
+ MT_ST_BUFFER_WRITES
+ MT_ST_CAN_BSR
+ MT_ST_CAN_PARTITIONS
+ MT_ST_CLEARBOOLEANS
+ MT_ST_CLEAR_DEFAULT
+ MT_ST_DEBUGGING
+ MT_ST_DEF_BLKSIZE
+ MT_ST_DEF_OPTIONS
+ MT_ST_DEF_WRITES
+ MT_ST_DENSITY_MASK
+ MT_ST_FAST_MTEOM
+ MT_ST_NO_BLKLIMS
+ MT_ST_OPTIONS
+ MT_ST_READ_AHEAD
+ MT_ST_SCSI2LOGICAL
+ MT_ST_SETBOOLEANS
+ MT_ST_SOFTERR_MASK
+ MT_ST_TWO_FM
+ MT_ST_WRITE_THRESHOLD
+# vim: set ts=8 sw=4 et :

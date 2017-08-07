@@ -1,0 +1,370 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008-2011, 2013 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or (at
+.\" your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ad l
+.hy 0
+.nf
+.so etc/version.so
+<!DOCTYPE HTML PUBLIC
+    "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd"
+    >
+<html>
+<head>
+<title>
+libexplain \*(v)
+</title>
+</head>
+<body background="bg.png">
+<img src="libexplain.128.png" align="left" alt="" />
+<img src="libexplain.128.png" align="right" alt="" />
+<h1 align="center">
+libexplain \*(v)
+</h1>
+The libexplain project provides a library which may be used to explain
+Unix and Linux system call errors.
+This will make your application's error messages much more
+informative to your users.
+<p>
+The library is not quite a drop-in replacement for strerror, but it
+comes close.
+Each system call has a dedicated libexplain function, for example
+<blockquote><pre>
+fd = open(path, flags, mode);
+if (fd < 0)
+{
+    fprintf(stderr, "%s\en", <a
+href="doc-external/open_8h.html#7c0bfc9a553438096c19b86dab687b2a"
+>explain_open</a>(path, flags, mode));
+    exit(EXIT_FAILURE);
+}
+</pre></blockquote>
+<p>
+    <table align="right" width="30%" ><tr bgcolor="#eeeebb" ><td><img
+    src="http://miller.emu.id.au/pmiller/images/kfish-64.png" alt="" ></td><td>
+    <small>&lsquo;I think it's totally awesome, in the category
+    of &ldquo;why hasn't this existed for <i>n</i> years&rdquo;
+    awesome.&rsquo; &mdash; <a href="http://www.kfish.org/"
+    >Parker san</a></small></td></tr>
+    </table>
+If, for example, you were to try to open
+<tt>no-such-dir/some-file</tt>, you would see a message like
+<blockquote>
+<tt>open(pathname = "no-such-dir/some-file", flags = O_RDONLY)
+failed, No such file or directory (2, ENOENT) because there is no
+"no-such-dir" directory in the current directory</tt>
+</blockquote>
+<p>
+The good news is that for each of these functions there is a wrapper
+function, in this case <a
+href="doc-external/open_8h.html#ef4b43a41f11f51b07aa6a6162ad5bc1"
+><i>explain_open_or_die</i>(3)</a>,
+that includes
+the above code fragment.  Adding good error reporting is as simple as
+using a different, but similarly named, function.
+The library also provides thread safe variants of each explanation function.
+<p>
+The coverage for system calls is being improved all the time, as you can
+see from <a href="doc-external/files.html" >this documentation page</a>
+generated from the source code.
+.so etc/coverage.so
+
+<h2>
+<img src="watch2.128.png" align="right" alt="" />
+Documentation </h2>
+<ul>
+<li> The LCA 2010 talk, &ldquo;<i>No medium found: when it's time to stop
+trying to read strerror's mind</i>&rdquo; is a available as
+<a href="lca2010/lca2010.pdf" >PDF</a>, and the slides are available as
+<a href="lca2010/index.html" >HTML</a>.
+<li>
+There is <a href="doc-external/index.html"
+>full documentation</a> of all API functions.
+This is the interface users of the library may use.
+<li>
+There is <a href="doc-internal/index.html"
+>full documentation</a> of all internal functions.
+This includes all of the functions internal to the library,
+for libexplain developers to use.
+<li>
+The above documentation is generated from the source files,
+via <a href="http://www.doxygen.org/index.html" >Doxygen</a>.
+<li> Want to help?  <a href="fixme.html" >Here is a list of places</a>
+in the source code marked &ldquo;FIXME&rdquo;.
+</ul>
+<br clear="right" />
+
+<h2>
+Download </h2>
+<p>
+    <table align="right" width="30%" >
+    <tr bgcolor="#eeeebb" >
+    <td>
+    <small>&ldquo;pmiller read the kernel source so you don't have to&rdquo;
+    &mdash; Rob Weir </small
+    </td
+    </tr>
+    </table>
+There are several ways you can obtain the software, as either source
+code or pre-compiled binaries.
+<p>
+<table>
+<tr>
+    <td valign="top" align="center" >
+        <img src="libexplain.64.png" alt="[*]" />
+    </td>
+    <td valign="top" ><b>Master Sources</b><br/>
+        <p>
+        The following files are available for download from this web site:
+        <p>
+        <table>
+        <tr>
+            <th>File</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td nowrap>
+                <a href="libexplain-\*(V).README"
+                >libexplain-\*(V).README</a>
+            </td>
+            <td>
+                The README file form the tarball.
+            </td>
+        </tr>
+        <tr>
+            <td nowrap>
+                <a href="libexplain-\*(V).tar.gz"
+                >libexplain-\*(V).tar.gz</a>
+            </td>
+            <td>
+                The complete source.</td>
+            </tr>
+        <tr>
+            <td nowrap>
+                <a href="libexplain-\*(V).pdf" >libexplain-\*(V).pdf</a>
+            </td>
+            <td>
+                The reference manual, in PDF format.</td>
+            </tr>
+        </table>
+        <p><br/>
+    </td>
+</tr>
+
+<tr>
+    <td valign="top" align="center" >
+        <a href="https://sourceforge.net/projects/libexplain/files/" ><img
+        src="sf.png" border=0 alt="[*]" /></a>
+    </td>
+    <td valign="top" ><b>Sourceforge Downloads </b><br/>
+        <ul>
+        <li> The best possible download speed for the source tarball will be
+             from the <a
+             href="https://sourceforge.net/projects/libexplain/files/"
+             >SourceForge download pages</a>
+        <li> here is the <a
+href="http://sourceforge.net/projects/libexplain/files/\
+\*(v)/libexplain-\*(V).tar.gz/download"
+             >most recent tarball</a> from there.
+        </ul>
+        <p><br/>
+    </td>
+</tr>
+
+<tr>
+    <td valign="top" align="center" >
+        <a href="https://launchpad.net/~pmiller-opensource/+archive/ppa" ><img
+        src="https://launchpad.net/@@/launchpad-logo.png" border=0 alt="[*]"
+        /></a></td>
+    <td valign="top" ><b>Ubuntu Packages</b><br/>
+        <p>
+        If you use Ubuntu Linux, there are pre-built packages available for
+        installation using the normal <tt>sudo apt-get install</tt> method,
+        from <a href="https://launchpad.net/~pmiller-opensource/+archive/ppa"
+        >this package archive</a> (<a
+        href="https://help.launchpad.net/Packaging/PPA" >PPA</a>).
+        <p>
+        Instructions are available there for how to manually add the PPA to your
+        <tt>/etc/apt/sources.list</tt> file, but the following commands are
+        sufficient on recent versions of Ubuntu:
+        <blockquote>
+<pre>sudo add-apt-repository ppa:pmiller-opensource/ppa
+sudo apt-get update
+sudo apt-get install libexplain-dev</pre>
+        </blockquote>
+        <p><br/>
+    </td>
+</tr>
+
+<tr>
+    <td valign="top" align="center" >
+        <img src="http://srecord.sourceforge.net/debian.png" alt="[*]" />
+    </td>
+    <td valign="top" ><b>Debian Packages</b><br/>
+        <ul>
+        <li> The libexplain project is <a
+href="http://packages.debian.org/search?keywords=libexplain&amp;\
+searchon=names&amp;suite=all&amp;section=all"
+             >available</a> as part of Debian Linux.
+        <li> The libexplain project is <a
+href="http://packages.ubuntu.com/search?keywords=libexplain&amp;\
+searchon=names&amp;suite=all&amp;section=all"
+             >available</a> as part of Ubuntu Linux.
+        <li> The most recent version is usually available <a
+             href="https://launchpad.net/~pmiller-opensource/+archive/ppa"
+             >from the PPA</a>.
+        <li> This web site also provides <a href="debian/"
+             >pre-built Debian packages</a> for
+.so etc/lsb-release.so
+        </ul>
+        <p><br/>
+    </td>
+</tr>
+
+<tr>
+    <td valign="top" align="center" >
+        <a href="http://aegis.sourceforge.net/" ><img
+        src="http://aegis.sourceforge.net/aegis.png"
+        border=0 alt="[*]" /></a>
+    </td>
+    <td valign="top" ><b>Aegis</b><br/>
+        <ul>
+        <li> Libexplain is developed using <a
+             href="http://aegis.sourceforge.net/" >Aegis</a> DVCS
+        <li> The Aegis <a
+         href="http://aegis.sourceforge.net/cgi-bin/aeget/libexplain.\*(v)?menu"
+             >repository</a> for this project is available.
+        <li> The complete source is <a href="libexplain-\*(V).ae"
+             >available</a> in <i>aedist</i>(1) format.
+        </ul>
+    </td>
+</tr>
+
+</table>
+
+.\" ------------------------------------------------------------------------
+<hr/>
+<h2>
+<img src="orrery1.128.png" align="right" alt="" />
+Services provided by SourceForge </h2>
+
+<ul>
+<li>
+    Mailing list is <a
+    href="mailto:libexplain-users@lists.sourceforge.net"
+    >libexplain-users@lists.sourceforge.net</a>, and you can subscribe <a
+    href="https://lists.sourceforge.net/lists/listinfo/libexplain-users"
+    >here</a>.
+<li>
+    SourceForge <a href="http://sourceforge.net/projects/libexplain/"
+    >project</a> page.
+<li>
+    SourceForge <a
+    href="http://sourceforge.net/projects/libexplain/files/" >download</a> page,
+    and most recent <a
+    href="http://sourceforge.net/project/platformdownload.php?group_id=241772"
+    >tarball</a> link.
+<li>
+    SourceForge <a href="https://sourceforge.net/tracker/?group_id=241772"
+    >trackers</a> page: the <a
+href="https://sourceforge.net/tracker/?\
+atid=1117296&amp;group_id=241772&amp;func=browse"
+    >bug tracker</a>, the <a
+href="http://sourceforge.net/tracker/?\
+atid=1117298&amp;group_id=241772&amp;func=browse"
+    >patch tracker</a>, and <a
+href="http://sourceforge.net/tracker/?\
+atid=1117299&amp;group_id=241772&amp;func=browse"
+    >feature requests</a>.
+</ul>
+
+<h2> Services provided by Debian </h2>
+<ul>
+<li> Debian main <a
+href="https://buildd.debian.org/pkg.cgi?pkg=libexplain&amp;dist=unstable"
+>build farm</a>
+<li> Debian ports <a
+href="http://buildd.debian-ports.org/status/package.php?\
+suite=unstable&amp;p=libexplain"
+>build farm</a>.
+</ul>
+
+.\" ------------------------------------------------------------------------
+<hr>
+<table border=0>
+<tr>
+    <td valign="top">
+        <a href="http://www.fsf.org/" ><img
+        src="http://upload.wikimedia.org/wikipedia/commons/b/bf/\
+GNU-FDL-ic%C3%B4ne-Transparente.PNG"
+        border=0 width=129 height=122 alt="" /></a>
+    </td>
+    <td valign="top" width="35%" >
+        Libexplain is written and owned by
+        <a href="mailto:pmiller@opensource.org.au"
+        >Peter Miller &lt;pmiller@opensource.org.au&gt;</a>
+        and is freely distributable under the terms and conditions of the
+        <a href="http://www.gnu.org/licenses/lgpl.txt">GNU LGPL</a>,
+        so you may use libexplain with proprietary programs.
+    </td>
+    <td valign="top">
+        <a href="http://www.opensource.org/docs/definition.php" ><img
+        src="http://www.opensource.org/trademarks/opensource/web/transparent/\
+opensource-110x95-t.png"
+        border="0" width="110" height="95" alt="" /></a>
+    </td>
+    <td valign="top" align="right">
+        There is more <a href="http://miller.emu.id.au/pmiller/software/"
+        >Software by Peter Miller</a> at his home page.
+    </td>
+    <td valign="top">
+        <a href="http://miller.emu.id.au/pmiller/" ><img
+        src="http://miller.emu.id.au/pmiller/pmiller_2003_colour.64.png"
+        border=0 alt="" /></a>
+    </td>
+</tr>
+</table>
+.\" ------------------------------------------------------------------------
+<hr/>
+<a href="http://sourceforge.net/"><img
+src="http://sourceforge.net/sflogo.php?group_id=237324&amp;type=5"
+width="210" height="62" border="0" alt="SourceForge.net Logo"
+align="right"></a>
+This page is hosted by <a href="http://sourceforge.net/">SourceForge</a>.
+<br>
+This page has been accessed approximately
+<img
+src="http://miller.emu.id.au/cgi-bin/web_hit_counter?pmiller_libexplain_\*(v)"
+alt="number" /> times since
+.ds MO1 Jan
+.ds MO2 Feb
+.ds MO3 Mar
+.ds MO4 Apr
+.ds MO5 May
+.ds MO6 Jun
+.ds MO7 Jul
+.ds MO8 Aug
+.ds MO9 Sep
+.ds MO10 Oct
+.ds MO11 Nov
+.ds MO12 Dec
+.nr y4 \n[yr]+1900
+\n[dy]-\*[MO\n[mo]]-\n[y4].
+</body>
+</html>
+.\" vim: set ts=8 sw=4 et :

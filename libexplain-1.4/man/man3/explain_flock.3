@@ -1,0 +1,293 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2009-2011 Peter Miller
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or (at
+.\" your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_flock
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_flock 3
+.SH NAME
+explain_flock \- explain flock(2) errors
+.if require_index \{
+.XX "explain_flock(3)" "explain flock(2) errors"
+.\}
+.SH SYNOPSIS
+#include <libexplain/flock.h>
+.sp 0.3
+.ad l
+const char *explain_flock(int fildes, int command);
+.br
+const char *explain_errno_flock(int errnum, int fildes, int command);
+.br
+void explain_message_flock(char *message, int message_size, int fildes, int
+command);
+.br
+void explain_message_errno_flock(char *message, int message_size, int
+errnum, int fildes, int command);
+.ad b
+.SH DESCRIPTION
+These functions may be used to obtain explanations for errors returned by
+the \f[I]flock\fP(2) system call.
+.\" ----------------------------------------------------
+.SS explain_flock
+.ad l
+const char *explain_flock(int fildes, int command);
+.ad b
+.PP
+The \f[B]explain_flock\fP function is used to obtain an explanation of an
+error returned by the \f[I]flock\fP(2) system call. The least the message
+will contain is the value of \f[CW]strerror(errno)\fP, but usually it will
+do much better, and indicate the underlying cause in more detail.
+.PP
+The \f[I]errno\fP global variable will be used to obtain the error value to
+be decoded.
+.TP 8n
+\f[I]fildes\fP
+The original fildes, exactly as passed to the \f[I]flock\fP(2) system call.
+.TP 8n
+\f[I]command\fP
+The original command, exactly as passed to the \f[I]flock\fP(2) system
+call.
+.TP 8n
+Returns:
+The message explaining the error. This message buffer is shared by all
+libexplain functions which do not supply a buffer in their argument list.
+This will be overwritten by the next call to any libexplain function which
+shares this buffer, including other threads.
+.PP
+\f[B]Note:\fP This function is \f[B]not\fP thread safe, because it shares a
+return buffer across all threads, and many other functions in this library.
+.PP
+\f[B]Example:\fP This function is intended to be used in a fashion similar
+to the following example:
+.RS
+.ft CW
+.fi
+.ad l
+if (flock(fildes, command) < 0)
+.ad b
+.nf
+{
+.fi
+.ad l
+.in +4n
+fprintf(stderr, "%s\en", explain_flock(fildes, command));
+.in -4n
+.nf
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.ad b
+.RE
+.PP
+The above code example is available pre\[hy]packaged as the
+\f[I]explain_flock_or_die\fP(3) function.
+.\" ----------------------------------------------------
+.SS explain_errno_flock
+.ad l
+const char *explain_errno_flock(int errnum, int fildes, int command);
+.ad b
+.PP
+The \f[B]explain_errno_flock\fP function is used to obtain an explanation
+of an error returned by the \f[I]flock\fP(2) system call. The least the
+message will contain is the value of \f[CW]strerror(errno)\fP, but usually
+it will do much better, and indicate the underlying cause in more detail.
+.TP 8n
+\f[I]errnum\fP
+The error value to be decoded, usually obtained from the \f[I]errno\fP
+global variable just before this function is called. This is necessary if
+you need to call \f[B]any\fP code between the system call to be explained
+and this function, because many libc functions will alter the value of
+\f[I]errno\fP.
+.TP 8n
+\f[I]fildes\fP
+The original fildes, exactly as passed to the \f[I]flock\fP(2) system call.
+.TP 8n
+\f[I]command\fP
+The original command, exactly as passed to the \f[I]flock\fP(2) system
+call.
+.TP 8n
+Returns:
+The message explaining the error. This message buffer is shared by all
+libexplain functions which do not supply a buffer in their argument list.
+This will be overwritten by the next call to any libexplain function which
+shares this buffer, including other threads.
+.PP
+\f[B]Note:\fP This function is \f[B]not\fP thread safe, because it shares a
+return buffer across all threads, and many other functions in this library.
+.PP
+\f[B]Example:\fP This function is intended to be used in a fashion similar
+to the following example:
+.RS
+.ft CW
+.fi
+.ad l
+if (flock(fildes, command) < 0)
+.ad b
+.nf
+{
+    int err = errno;
+.fi
+.ad l
+.in +4n
+fprintf(stderr, "%s\en", explain_errno_flock(err, fildes, command));
+.in -4n
+.nf
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.ad b
+.RE
+.PP
+The above code example is available pre\[hy]packaged as the
+\f[I]explain_flock_or_die\fP(3) function.
+.\" ----------------------------------------------------
+.SS explain_message_flock
+.ad l
+void explain_message_flock(char *message, int message_size, int fildes, int
+command);
+.ad b
+.PP
+The \f[B]explain_message_flock\fP function is used to obtain an explanation
+of an error returned by the \f[I]flock\fP(2) system call. The least the
+message will contain is the value of \f[CW]strerror(errno)\fP, but usually
+it will do much better, and indicate the underlying cause in more detail.
+.PP
+The \f[I]errno\fP global variable will be used to obtain the error value to
+be decoded.
+.TP 8n
+\f[I]message\fP
+The location in which to store the returned message. If a suitable message
+return buffer is supplied, this function is thread safe.
+.TP 8n
+\f[I]message_size\fP
+The size in bytes of the location in which to store the returned message.
+.TP 8n
+\f[I]fildes\fP
+The original fildes, exactly as passed to the \f[I]flock\fP(2) system call.
+.TP 8n
+\f[I]command\fP
+The original command, exactly as passed to the \f[I]flock\fP(2) system
+call.
+.PP
+\f[B]Example:\fP This function is intended to be used in a fashion similar
+to the following example:
+.RS
+.ft CW
+.fi
+.ad l
+if (flock(fildes, command) < 0)
+.ad b
+.nf
+{
+    char message[3000];
+.in +4n
+.fi
+.ad l
+explain_message_flock(message, sizeof(message), fildes, command);
+.nf
+.in -4n
+    fprintf(stderr, "%s\en", message);
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.ad b
+.RE
+.PP
+The above code example is available pre\[hy]packaged as the
+\f[I]explain_flock_or_die\fP(3) function.
+.\" ----------------------------------------------------
+.SS explain_message_errno_flock
+.ad l
+void explain_message_errno_flock(char *message, int message_size, int
+errnum, int fildes, int command);
+.ad b
+.PP
+The \f[B]explain_message_errno_flock\fP function is used to obtain an
+explanation of an error returned by the \f[I]flock\fP(2) system call. The
+least the message will contain is the value of \f[CW]strerror(errno)\fP,
+but usually it will do much better, and indicate the underlying cause in
+more detail.
+.TP 8n
+\f[I]message\fP
+The location in which to store the returned message. If a suitable message
+return buffer is supplied, this function is thread safe.
+.TP 8n
+\f[I]message_size\fP
+The size in bytes of the location in which to store the returned message.
+.TP 8n
+\f[I]errnum\fP
+The error value to be decoded, usually obtained from the \f[I]errno\fP
+global variable just before this function is called. This is necessary if
+you need to call \f[B]any\fP code between the system call to be explained
+and this function, because many libc functions will alter the value of
+\f[I]errno\fP.
+.TP 8n
+\f[I]fildes\fP
+The original fildes, exactly as passed to the \f[I]flock\fP(2) system call.
+.TP 8n
+\f[I]command\fP
+The original command, exactly as passed to the \f[I]flock\fP(2) system
+call.
+.PP
+\f[B]Example:\fP This function is intended to be used in a fashion similar
+to the following example:
+.RS
+.ft CW
+.fi
+.ad l
+if (flock(fildes, command) < 0)
+.ad b
+.nf
+{
+    int err = errno;
+    char message[3000];
+.in +4n
+.fi
+.ad l
+explain_message_errno_flock(message, sizeof(message), err, fildes,
+command);
+.nf
+.in -4n
+    fprintf(stderr, "%s\en", message);
+    exit(EXIT_FAILURE);
+}
+.fi
+.ft R
+.ad b
+.RE
+.PP
+The above code example is available pre\[hy]packaged as the
+\f[I]explain_flock_or_die\fP(3) function.
+.\" ----------------------------------------------------
+.SH SEE ALSO
+.TP 8n
+\f[I]flock\fP(2)
+apply or remove an advisory lock on an open file
+.TP 8n
+\f[I]explain_flock_or_die\fP(3)
+apply or remove an advisory lock on an open file and report errors
+.\" ----------------------------------------------------
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2009 Peter Miller
+.\" vim: set ts=8 sw=4 et

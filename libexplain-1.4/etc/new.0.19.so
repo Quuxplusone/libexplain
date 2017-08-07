@@ -1,0 +1,104 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2009, 2010 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change: 54
+Several lintian warnings relating to the man pages have been fixed.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change: 50
+The LIBEXPLAIN_OPTIONS environment variable now understands a
+new symbolic\[hy]mode\[hy]bits=true option.  It defaults to false, for
+shorter error explanations.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Changes: 23, 42, 43, 51, 70, 71, 99, 107, 109, 110, 111, 112, 115,
+There is a new \f[I]explain_lca2010\fP(1) man page.
+This is a gentle introduction to libexplain,
+and the paper accompanying my LCA 2010 talk.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change: 21
+When process ID (pid) values are printed, they are now
+accompanied by the name of the process executable, when
+available.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Changes: 13, 25, 26, 41, 44, 57, 58, 108, 114
+Numerous build bugs and niggles have been fixed.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Changes: 11, 19, 45, 47, 49, 52, 53, 55, 56, 59, 60, 61, 62, 63, 64,
+.\" 65, 66, 67, 68, 73, 74, 78, 79, 80, 86, 87, 88, 89, 91,
+Explanations are now available for errors reported by the
+\f[I]execlp\fP(3),
+\f[I]fdopendir\fP(3),
+\f[I]feof\fP(3),
+\f[I]fgetpos\fP(3),
+\f[I]fputs\fP(3),
+\f[I]fseek\fP(3),
+\f[I]fsetpos\fP(3),
+\f[I]fsync\fP(2),
+\f[I]ftell\fP(3),
+\f[I]mkdtemp\fP(3),
+\f[I]mknod\fP(2),
+\f[I]mkostemp\fP(3),
+\f[I]mkstemp\fP(3),
+\f[I]mktemp\fP(3),
+\f[I]putenv\fP(3),
+\f[I]puts\fP(3),
+\f[I]raise\fP(3),
+\f[I]setbuf\fP(3),
+\f[I]setbuffer\fP(3),
+\f[I]setenv\fP(3),
+\f[I]setlinebuf\fP(3),
+\f[I]setvbuf\fP(3),
+\f[I]stime\fP(2),
+\f[I]tempnam\fP(3),
+\f[I]tmpfile\fP(3),
+\f[I]tmpnam\fP(3),
+\f[I]ungetc\fP(3),
+\f[I]unsetenv\fP(3) and
+\f[I]vfork\fP(2)
+system calls.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change: 15, 16, 17, 18, 20, 22, 24, 27, 34, 37, 69
+The ioctl requests from
+linux/sockios.h,
+linux/ext2_fs.h,
+linux/if_eql.h,
+PPP,
+linux/lp.h, and
+linux/vt.h
+are now understood.
+Several of the ioctl explanations have been improved.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.19 (2009\[hy]Sep\[hy]07)
+.\" vim: set ts=8 sw=4 et

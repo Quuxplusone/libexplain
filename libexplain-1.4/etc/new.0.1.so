@@ -1,0 +1,55 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008, 2010 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 47, 51, 153, 152, 151, 149, 150, 41, 38, 34, 36, 147, 155, 146
+Coverage now includes
+\f[I]chmod\fP(2),
+\f[I]chown\fP(2),
+\f[I]dup\fP(2),
+\f[I]fchdir\fP(2),
+\f[I]fchmod\fP(2),
+\f[I]fstat\fP(2),
+\f[I]ftruncate\fP(2),
+\f[I]fwrite\fP(3),
+\f[I]mkdir\fP(2),
+\f[I]readdir\fP(3),
+\f[I]readlink\fP(2),
+\f[I]remove\fP(3),
+\f[I]rmdir\fP(2) and
+\f[I]truncate\fP(2).
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 55
+The \f[I]lsof\fP(1) command is used to obtain supplementary file
+information on those systems with limited \f[CW]/proc\fP implementations.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 52
+The explanations now understand Linux capabilities.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.1 (2008\[hy]Oct\[hy]26)
+First public release.
+.\" vim:ts=8:sw=4:et

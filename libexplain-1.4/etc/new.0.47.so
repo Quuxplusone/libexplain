@@ -1,0 +1,68 @@
+.\"
+.\" libexplain - a library of system-call-specific strerror replacements
+.\" Copyright (C) 2011 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by the Free
+.\" Software Foundation; either version 3 of the License, or (at your option)
+.\" any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+.\" or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+.\" for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 50
+Explanations are now available for errors reported by the
+\f[I]shmat\fP(2) system call.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 22
+Several build problems on Solaris have been fixed.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 21
+Dagobert Michelsen <dam@opencsw.org> found the test 625 was
+throwing a false negative in his test environment. It can now
+cope with stdin being closed.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 18
+Dagobert Michelsen <dam@opencsw.org> discovered that, on Solaris, test
+false negatives were caused by the need for a space before the width in
+a \[lq]\f[CW]fmt \-w 800\fP\[rq] command.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 15
+Eric Smith <eric@brouhaha.com> discovered that \f[I]lsof\fP(1) could
+report errors as executable names, when it couldn't read the
+symlink.  These non\[hy]results are now filtered out.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 14
+Eric Smith <eric@brouhaha.com> discovered three false negatives
+from tests of the \f[I]kill\fP(2) system call.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 13
+Better explanations are now available when
+a user attempts to execute a directory.
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 0.47 (2011\[hy]Sep\[hy]27)
+.\" vim: set ts=8 sw=4 et :

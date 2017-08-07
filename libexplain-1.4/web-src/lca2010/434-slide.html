@@ -1,0 +1,68 @@
+<!--
+  libexplain - Explain errno values returned by libc functions
+  Copyright (C) 2009, 2010 Peter Miller
+  Written by Peter Miller <pmiller@opensource.org.au>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or (at
+  your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
+.hy 0
+.ad l
+<!DOCTYPE HTML PUBLIC
+    "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd"
+    >
+.nf
+<html>
+<head>
+<title>
+No Medium Found, 4.3
+</title>
+</head>
+<body>
+
+<table width="100%" >
+<tr>
+<td align="left" >
+<a href="433-slide.html" >Prev</a>,
+<a href="index.html" >Top</a>
+</td><td align="right" >
+<a href="400-notes.html#4.3" >Notes</a>,
+<a href="440-slide.html" >Next</a>
+</td>
+</tr>
+</table>
+
+<h1 align="center" >
+Find the Final Entry
+</h1>
+
+<table align="center" width=800 ><tr><td>
+The lookup of the final component of the pathname goes just like that
+of all other components, with two differences:
+<ol start=5 >
+<li>
+The &ldquo;t&rdquo; bit is voodoo:
+<blockquote><tt>
+unlink(pathname = "/tmp/no-no-no") failed, Operation not permitted (1,
+EPERM) because the pathname directory "/tmp" has the sticky
+bit (S_ISVTX) set and the process's effective UID (200 "pmiller") is
+neither the UID of the file to be deleted (201 "archives") nor that of
+the directory (0 "root"), and the process is not
+privileged (does not have the DAC_FOWNER capability)
+</tt></blockquote>
+</ol>
+</td></tr></table>
+
+</body>
+</html>

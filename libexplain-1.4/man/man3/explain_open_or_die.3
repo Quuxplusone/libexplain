@@ -1,0 +1,54 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008-2011 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_open_or_die
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_open_or_die 3
+.SH NAME
+explain_open_or_die \- open file and report errors
+.if require_index \{
+.XX "explain_open_or_die(3)" "open file and report errors"
+.\}
+.SH SYNOPSIS
+#include <fcntl.h>
+.br
+#include <libexplain/open.h>
+.sp
+int explain_open_or_die(const char *pathname, int flags, int mode);
+.SH DESCRIPTION
+Given a pathname for a file, open() returns a file descriptor, a small,
+non\[hy]negative integer for use in subsequent system calls (read(2),
+write(2), lseek(2), fcntl(2), etc.).  The file descriptor returned
+by a successful call will be the lowest\[hy]numbered file descriptor not
+currently open for the process.
+See \f[I]open\fP(2) for more information.
+.SH RETURN VALUE
+On success, the new file descriptor is returned.
+.PP
+On error, a description of the error is obtained via
+\f[I]explain_open\fP(3), and printed on \f[I]stderr\fP.  The process
+is the terminated via a call to the \f[CW]exit(EXIT_FAILURE)\fP function.
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2008 Peter Miller
+.SH AUTHOR
+Written by Peter Miller <pmiller@opensource.org.au>

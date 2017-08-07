@@ -1,0 +1,785 @@
+.\"
+.\" libexplain - Explain errno values returned by libc functions
+.\" Copyright (C) 2008-2013 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain 1
+.SH NAME
+explain \- explain system call error messages
+.if require_index \{
+.XX "explain(1)" "explain system call error messages"
+.\}
+.SH SYNOPSIS
+\f[B]\*(n)\fP
+[
+\f[I]option\fP
+\&...
+]
+\f[I]function\fP
+[
+\f[I]argument\fP
+\&...
+]
+.sp
+.B \*(n)
+.B \-\-version
+.SH DESCRIPTION
+The \*(n) command is used to decode an error return read from an
+\f[I]strace\fP(1) listing, or silimar.  Because this is being
+deciphered in a different process than the orginal, the results
+will be less accurate than if the program itself were to use
+\f[I]libexplain\fP(3).
+.SS Functions
+The functions understood include:
+.\" ----------  A  ---------------------------------------------------------
+.TP 8n
+accept \f[I]fildes\fP \f[I]addr\fP \f[I]addrlen\fP
+The \f[I]accept\fP(2) system call.
+.TP 8n
+accept4 \f[I]fildes\fP [[ \f[I]sock_addr\fP \f[I]sock_addr_size\fP ] \
+\f[I]flags\fP ]
+The \f[I]accept4\fP(2) system call.
+.TP 8n
+access \f[I]pathname\fP
+The \f[I]access\fP(2) system call.
+.TP 8n
+acct \f[I]pathname\fP
+The \f[I]acct\fP(2) system call.
+.TP 8n
+acl_from_text \f[I]text\fP
+The \f[I]acl_from_text\fP(3) system call.
+.TP 8n
+acl_get_fd \f[I]fildes\fP
+The \f[I]acl_get_fd\fP(3) system call.
+.TP 8n
+acl_get_file \f[I]pathname\fP \f[I]type\fP
+The \f[I]acl_get_file\fP(3) system call.
+.TP 8n
+acl_set_fd \f[I]fildes\fP \f[I]acl\fP
+The \f[I]acl_set_fd\fP(3) system call.
+.TP 8n
+acl_set_file \f[I]pathname\fP \f[I]type\fP \f[I]acl\fP
+The \f[I]acl_set_file\fP(3) system call.
+.TP 8n
+acl_to_text \f[I]acl\fP \f[I]len_p\fP
+The \f[I]acl_to_text\fP(3) system call.
+.TP 8n
+adjtime \f[I]delta\fP \f[I]olddelta\fP
+The \f[I]adjtime\fP(2) system call.
+.TP 8n
+adjtimex \f[I]data\fP
+The \f[I]adjtimex\fP(2) system call.
+.TP 8n
+asprintf
+The \f[I]asprintf\fP(3) system call.
+.\" ----------  B  ---------------------------------------------------------
+.TP 8n
+bind \f[I]fildes\fP \f[I]addr\fP \f[I]sockaddr_size\fP
+The \f[I]bind\fP(2) system call.
+.\" ----------  C  ---------------------------------------------------------
+.TP 8n
+calloc \f[I]nmemb\fP \f[I]size\fP
+The \f[I]calloc\fP(3) system call.
+.TP 8n
+chdir \f[I]pathname\fP
+The \f[I]chdir\fP(2) system call.
+.TP 8n
+chmod \f[I]pathname\fP \f[I]permission\[hy]mode\fP
+The \f[I]chmod\fP(2) system call.
+.TP 8n
+chown \f[I]pathname\fP \f[I]owner\fP \f[I]group\fP
+The \f[I]chown\fP(2) system call.
+.TP 8n
+chroot \f[I]pathname\fP
+The \f[I]chroot\fP(2) system call.
+.TP 8n
+close \f[I]fildes\fP
+The \f[I]close\fP(2) system call.
+.TP 8n
+closedir \f[I]dir\fP
+The \f[I]closedir\fP(3) system call.
+.TP 8n
+connect \f[I]fildes\fP \f[I]serv_addr\fP \f[I]serv_addr_size\fP
+The \f[I]connect\fP(2) system call.
+.TP 8n
+creat \f[I]pathname\fP [ \f[I]permission\[hy]mode\fP
+The \f[I]creat\fP(2) system call.
+.\" ----------  D  ---------------------------------------------------------
+.TP 8n
+dirfd \f[I]dir\fP
+The \f[I]dirfd\fP(3) system call.
+.TP 8n
+dup \f[I]fildes\fP
+The \f[I]dup\fP(2) system call.
+.TP 8n
+dup2 \f[I]oldfd\fP \f[I]newfd\fP
+The \f[I]dup2\fP(2) system call.
+.\" ----------  E  ---------------------------------------------------------
+.TP 8n
+endgrent
+The \f[I]endgrent\fP(3) system call.
+.TP 8n
+eventfd \f[I]initval\fP \f[I]flags\fP
+The \f[I]eventfd\fP(2) system call.
+.TP 8n
+execlp \f[I]pathname\fP \f[I]arg\fP...
+The \f[I]execlp\fP(3) system call.
+.TP 8n
+execv \f[I]pathname\fP \f[I]argv\fP
+The \f[I]execv\fP(3) system call.
+.TP 8n
+execve \f[I]pathname\fP \f[I]arg\fP...
+The \f[I]execve\fP(2) system call.
+.TP 8n
+execvp \f[I]pathname\fP \f[I]arg\fP...
+The \f[I]execvp\fP(3) system call.
+.\" ----------  F  ---------------------------------------------------------
+.TP 8n
+fchdir \f[I]pathname\fP
+The \f[I]fchdir\fP(2) system call.
+.TP 8n
+fchmod \f[I]fildes\fP \f[I]mode\fP
+The \f[I]fchmod\fP(2) system call.
+.TP 8n
+fchown \f[I]fildes\fP \f[I]owner\fP \f[I]group\fP
+The \f[I]fchown\fP(2) system call.
+.TP 8n
+fchownat \f[I]dirfd\fP \f[I]pathname\fP \f[I]owner\fP \f[I]group\fP \
+\f[I]flags\fP
+The \f[I]fchownat\fP(2) system call.
+.TP 8n
+fclose \f[I]fp\fP
+The \f[I]fclose\fP(3) system call.
+.TP 8n
+fcntl \f[I]fildes\fP \f[I]command\fP [ \f[I]arg\fP ]
+The \f[I]fcntl\fP(2) system call.
+.TP 8n
+fdopen \f[I]fd\fP \f[I]mode\fP
+The \f[I]fdopen\fP(3) system call.
+.TP 8n
+fdopendir \f[I]fildes\fP
+The \f[I]fdopendir\fP(3) system call.
+.TP 8n
+feof \f[I]fp\fP
+The \f[I]feof\fP(3) system call.
+.TP 8n
+ferror \f[I]fp\fP
+The \f[I]ferror\fP(3) system call.
+.TP 8n
+fflush \f[I]fp\fP
+The \f[I]fflush\fP(3) system call.
+.TP 8n
+fgetc \f[I]fp\fP
+The \f[I]fgetc\fP(3) system call.
+.TP 8n
+fgetpos \f[I]fp\fP \f[I]pos\fP
+The \f[I]fgetpos\fP(3) system call.
+.TP 8n
+fgets \f[I]data\fP \f[I]data_size\fP \f[I]fp\fP
+The \f[I]fgets\fP(3) system call.
+.TP 8n
+fileno \f[I]fp\fP
+The \f[I]fileno\fP(3) system call.
+.TP 8n
+flock \f[I]fildes\fP \f[I]command\fP
+The \f[I]flock\fP(2) system call.
+.TP 8n
+fork
+The \f[I]fork\fP(2) system call.
+.TP 8n
+fpathconf \f[I]fildes\fP \f[I]name\fP
+The \f[I]fpathconf\fP(3) system call.
+.TP 8n
+fpurge \f[I]fp\fP
+The \f[I]fpurge\fP(3) system call.
+.TP 8n
+fread \f[I]ptr\fP \f[I]size\fP \f[I]nmemb\fP \f[I]fp\fP
+The \f[I]fread\fP(3) system call.
+.TP 8n
+fopen \f[I]pathname\fP \f[I]mode\fP
+The \f[I]fopen\fP(2) system call.
+The \f[I]pathname\fP argument may need to be quoted to insulate white space and
+punctuation from the shell.
+The \f[I]mode\fP argument (a textual equivalent of the \f[I]open\fP
+system call's \f[I]flags\fP argument).
+See \f[I]fopen\fP(3) for more information.
+.TP 8n
+fputc \f[I]c\fP [ \f[I]fp\fP ]
+The \f[I]fputc\fP(3) system call.
+.TP 8n
+fputs \f[I]s\fP \f[I]fp\fP
+The \f[I]fputs\fP(3) system call.
+.TP 8n
+freopen \f[I]pathname\fP \f[I]flags\fP \f[I]fp\fP
+The \f[I]freopen\fP(3) system call.
+.TP 8n
+fseek \f[I]fp\fP \f[I]offset\fP \f[I]whence\fP
+The \f[I]fseek\fP(3) system call.
+.TP 8n
+fseeko \f[I]fp\fP \f[I]offset\fP \f[I]whence\fP
+The \f[I]fseeko\fP(3) system call.
+.TP 8n
+fsetpos \f[I]fp\fP \f[I]pos\fP
+The \f[I]fsetpos\fP(3) system call.
+.TP 8n
+fstat \f[I]pathname\fP
+The \f[I]fstat\fP(2) system call.
+.TP 8n
+fstatat \f[I]fildes\fP \f[I]pathname\fP \f[I]data\fP \f[I]flags\fP
+The \f[I]fstatat\fP(2) system call.
+.TP 8n
+fstatfs \f[I]fildes\fP \f[I]data\fP
+The \f[I]fstatfs\fP(2) system call.
+.TP 8n
+fstatvfs \f[I]fildes\fP \f[I]data\fP
+The \f[I]fstatvfs\fP(2) system call.
+.TP 8n
+fsync \f[I]fildes\fP
+The \f[I]fsync\fP(2) system call.
+.TP 8n
+ftell \f[I]fp\fP
+The \f[I]ftell\fP(3) system call.
+.TP 8n
+ftello \f[I]fp\fP
+The \f[I]ftello\fP(3) system call.
+.TP 8n
+ftime \f[I]tp\fP
+The \f[I]ftime\fP(3) system call.
+.TP 8n
+ftruncate \f[I]fildes\fP \f[I]length\fP
+The \f[I]ftruncate\fP(2) system call.
+.TP 8n
+futimens \f[I]fildes\fP \f[I]data\fP
+The \f[I]futimens\fP(3) system call.
+.TP 8n
+futimes \f[I]fildes\fP \f[I]tv[0]\fP \f[I]data[1]\fP
+The \f[I]futimes\fP(3) system call.
+.TP 8n
+futimesat \f[I]fildes\fP \f[I]pathname\fP \f[I]data\fP
+The \f[I]futimesat\fP(2) system call.
+.\" ----------  G  ---------------------------------------------------------
+.TP 8n
+getc \f[I]fp\fP
+The \f[I]getc\fP(3) system call.
+.TP 8n
+getchar
+The \f[I]getchar\fP(3) system call.
+.TP 8n
+getcwd \f[I]buf\fP \f[I]size\fP
+The \f[I]getcwd\fP(2) system call.
+.TP 8n
+getdomainname \f[I]data\fP \f[I]data_size\fP
+The \f[I]getdomainname\fP(2) system call.
+.TP 8n
+getgrent
+The \f[I]getgrent\fP(3) system call.
+.TP 8n
+getgrouplist \f[I]user\fP \f[I]group\fP \f[I]groups\fP \f[I]ngroups\fP
+The \f[I]getgrouplist\fP(3) system call.
+.TP 8n
+getgroups \f[I]data_size\fP \f[I]data\fP
+The \f[I]getgroups\fP(2) system call.
+.TP 8n
+gethostbyname \f[I]name\fP
+The \f[I]gethostbyname\fP(3) system call.
+.TP 8n
+gethostid
+The \f[I]gethostid\fP(3) system call.
+.TP 8n
+gethostname [ \f[I]data\fP \f[I]data_size\fP ]
+The \f[I]gethostname\fP(2) system call.
+.TP 8n
+getpeername \f[I]fildes\fP \f[I]sock_addr\fP \f[I]sock_addr_size\fP
+The \f[I]getpeername\fP(2) system call.
+.TP 8n
+getpgid \f[I]pid\fP
+The \f[I]getpgid\fP(2) system call.
+.TP 8n
+getpgrp \f[I]pid\fP
+The \f[I]getpgrp\fP(2) system call.
+.TP 8n
+getpriority \f[I]which\fP \f[I]who\fP
+The \f[I]getpriority\fP(2) system call.
+.TP 8n
+getresgid \f[I]rgid\fP \f[I]egid\fP \f[I]sgid\fP
+The \f[I]getresgid\fP(2) system call.
+.TP 8n
+getresuid \f[I]ruid\fP \f[I]euid\fP \f[I]suid\fP
+The \f[I]getresuid\fP(2) system call.
+.TP 8n
+getrlimit \f[I]resource\fP \f[I]rlim\fP
+The \f[I]getrlimit\fP(2) system call.
+.TP 8n
+getrusage \f[I]who\fP \f[I]usage\fP
+The \f[I]getrusage\fP(2) system call.
+.TP 8n
+getsockname \f[I]fildes\fP [ \f[I]sock_addr\fP [ \f[I]sock_addr_size\fP ]]
+The \f[I]getsockname\fP(2) system call.
+.TP 8n
+getsockopt \f[I]fildes\fP \f[I]level\fP \f[I]name\fP \f[I]data\fP \
+\f[I]data_size\fP
+The \f[I]getsockopt\fP(2) system call.
+.TP 8n
+gettimeofday [ \f[I]tv\fP [ \f[I]tz\fP ] ]
+The \f[I]gettimeofday\fP(2) system call.
+.TP 8n
+getw \f[I]fp\fP
+The \f[I]getw\fP(3) system call.
+.\" ----------  H  ---------------------------------------------------------
+.\" ----------  I  ---------------------------------------------------------
+.TP 8n
+iconv \f[I]cd\fP \f[I]inbuf\fP \f[I]inbytesleft\fP \f[I]outbuf\fP \
+\f[I]outbytesleft\fP
+The \f[I]iconv\fP(3) system call.
+.TP 8n
+iconv_close \f[I]cd\fP
+The \f[I]iconv_close\fP(3) system call.
+.TP 8n
+iconv_open \f[I]tocode\fP \f[I]fromcode\fP
+The \f[I]iconv_open\fP(3) system call.
+.TP 8n
+ioctl \f[I]fildes\fP \f[I]request\fP \f[I]data\fP
+The \f[I]ioctl\fP(2) system call.
+.\" ----------  J  ---------------------------------------------------------
+.\" ----------  K  ---------------------------------------------------------
+.TP 8n
+kill \f[I]pid\fP \f[I]sig\fP
+The \f[I]kill\fP(2) system call.
+.\" ----------  L  ---------------------------------------------------------
+.TP 8n
+lchmod \f[I]pathname\fP \f[I]mode\fP
+The \f[I]lchmod\fP(2) system call.
+.TP 8n
+lchown \f[I]pathname\fP \f[I]owner\fP \f[I]group\fP
+The \f[I]lchown\fP(2) system call.
+.TP 8n
+lchownat \f[I]fildes\fP \f[I]pathname\fP \f[I]uid\fP \f[I]gid\fP
+The \f[I]lchownat\fP(2) system call.
+.TP 8n
+link \f[I]oldpath\fP \f[I]newpath\fP
+The \f[I]link\fP(2) system call.
+.TP 8n
+linkat \f[I]old_fildes\fP \f[I]old_path\fP \f[I]new_fildes\fP \f[I]new_path\fP \
+\f[I]flags\fP
+The \f[I]linkat\fP(2) system call.
+.TP 8n
+listen \f[I]fildes\fP \f[I]backlog\fP
+The \f[I]listen\fP(2) system call.
+.TP 8n
+lseek \f[I]fildes\fP \f[I]offset\fP \f[I]whence\fP
+The \f[I]lseek\fP(2) system call.
+.TP 8n
+lstat \f[I]pathname\fP
+The \f[I]lstat\fP(2) system call.
+.TP 8n
+lutimes \f[I]pathname\fP \f[I]data\fP
+The \f[I]lutimes\fP(3) system call.
+.\" ----------  M  ---------------------------------------------------------
+.TP 8n
+malloc \f[I]size\fP
+The \f[I]malloc\fP(3) system call.
+.TP 8n
+mkdir \f[I]pathname\fP [ \f[I]mode\fP ]
+The \f[I]mkdir\fP(2) system call.
+.TP 8n
+mkdtemp \f[I]pathname\fP
+The \f[I]mkdtemp\fP(3) system call.
+.TP 8n
+mknod \f[I]pathname\fP \f[I]mode\fP \f[I]dev\fP
+The \f[I]mknod\fP(2) system call.
+.TP 8n
+mkostemp \f[I]templat\fP \f[I]flags\fP
+The \f[I]mkostemp\fP(3) system call.
+.TP 8n
+mkstemp \f[I]templat\fP
+The \f[I]mkstemp\fP(3) system call.
+.TP 8n
+mktemp \f[I]pathname\fP
+The \f[I]mktemp\fP(3) system call.
+.TP 8n
+mmap \f[I]data\fP \f[I]data_size\fP \f[I]prot\fP \f[I]flags\fP \
+\f[I]fildes\fP \f[I]offset\fP
+The \f[I]mmap\fP(2) system call.
+.TP 8n
+mount \f[I]source\fP \f[I]target\fP \f[I]file_systems_type\fP \
+      \f[I]flags\fP \f[I]data\fP
+The \f[I]mount\fP(2) system call.
+.TP 8n
+munmap \f[I]data\fP \f[I]data_size\fP
+The \f[I]munmap\fP(2) system call.
+.\" ----------  N  ---------------------------------------------------------
+.TP 8n
+nanosleep \f[I]req\fP \f[I]rem\fP
+The \f[I]nanosleep\fP(2) system call.
+.TP 8n
+nice \f[I]inc\fP
+The \f[I]nice\fP(2) system call.
+.\" ----------  O  ---------------------------------------------------------
+.TP 8n
+open \f[I]pathname\fP \f[I]flags\fP [ \f[I]mode\fP ]
+The \f[I]open\fP(2) system call.
+The \f[I]pathname\fP argument may need to be quoted to insulate white space and
+punctuation from the shell.
+The \f[I]flags\fP argument may be numeric or symbolic.
+The \f[I]mode\fP argument may be numeric or symbolic.
+.TP 8n
+openat \f[I]fildes\fP \f[I]pathname\fP \f[I]flags\fP \f[I]mode\fP
+The \f[I]openat\fP(2) system call.
+The \f[I]flags\fP argument may be numeric or symbolic.
+The \f[I]mode\fP argument may be numeric or symbolic.
+.TP 8n
+opendir \f[I]pathname\fP
+The \f[I]opendir\fP(3) system call.
+.\" ----------  P  ---------------------------------------------------------
+.TP 8n
+pathconf \f[I]pathname\fP \f[I]name\fP
+The \f[I]pathconf\fP(3) system call.
+.TP 8n
+pclose \f[I]fp\fP
+The \f[I]pclose\fP(3) system call.
+.TP 8n
+pipe \f[I]pipefd\fP
+The \f[I]pipe\fP(2) system call.
+.TP 8n
+pipe2 \f[I]fildes\fP \f[I]flags\fP
+The \f[I]pipe2\fP(2) system call.
+.TP 8n
+poll \f[I]fds\fP \f[I]nfds\fP \f[I]timeout\fP
+The \f[I]poll\fP(2) system call.
+.TP 8n
+popen \f[I]command\fP \f[I]flags\fP
+The \f[I]popen\fP(3) system call.
+.TP 8n
+pread \f[I]fildes\fP \f[I]data\fP \f[I]data_size\fP \f[I]offset\fP
+The \f[I]pread\fP(2) system call.
+.TP 8n
+ptrace \f[I]request\fP \f[I]pid\fP \f[I]addr\fP \f[I]data\fP
+The \f[I]ptrace\fP(2) system call.
+.TP 8n
+putc \f[I]c\fP \f[I]fp\fP
+The \f[I]putc\fP(3) system call.
+.TP 8n
+putchar \f[I]c\fP
+The \f[I]putchar\fP(3) system call.
+.TP 8n
+putenv \f[I]string\fP
+The \f[I]putenv\fP(3) system call.
+.TP 8n
+puts \f[I]s\fP
+The \f[I]puts\fP(3) system call.
+.TP 8n
+putw \f[I]value\fP \f[I]fp\fP
+The \f[I]putw\fP(3) system call.
+.TP 8n
+pwrite \f[I]fildes\fP \f[I]data\fP \f[I]data_size\fP \f[I]offset\fP
+The \f[I]pwrite\fP(2) system call.
+.\" ----------  Q  ---------------------------------------------------------
+.\" ----------  R  ---------------------------------------------------------
+.TP 8n
+raise \f[I]sig\fP
+The \f[I]raise\fP(3) system call.
+.TP 8n
+read \f[I]fildes\fP \f[I]data\fP \f[I]data\[hy]size\fP
+The \f[I]read\fP(2) system call.
+.TP 8n
+realloc \f[I]ptr\fP \f[I]size\fP
+The \f[I]realloc\fP(3) system call.
+.TP 8n
+realpath \f[I]pathname\fP \f[I]resolved_pathname\fP
+The \f[I]realpath\fP(3) system call.
+.TP 8n
+rename \f[I]oldpath\fP \f[I]newpath\fP
+The \f[I]rename\fP(2) system call.
+.TP 8n
+readv \f[I]fildes\fP \f[I]iov\fP ...
+The \f[I]readv\fP(2) system call.
+.\" ----------  S  ---------------------------------------------------------
+.TP 8n
+select \f[I]nfds\fP \f[I]readfds\fP \f[I]writefds\fP \f[I]exceptfds\fP \
+\f[I]timeout\fP
+The \f[I]select\fP(2) system call.
+.TP 8n
+setbuf \f[I]fp\fP \f[I]data\fP
+The \f[I]setbuf\fP(3) system call.
+.TP 8n
+setbuffer \f[I]fp\fP \f[I]data\fP \f[I]size\fP
+The \f[I]setbuffer\fP(3) system call.
+.TP 8n
+setdomainname \f[I]data\fP \f[I]data_size\fP
+The \f[I]setdomainname\fP(2) system call.
+.TP 8n
+setenv \f[I]name\fP \f[I]value\fP \f[I]overwrite\fP
+The \f[I]setenv\fP(3) system call.
+.TP 8n
+setgid \f[I]gid\fP
+The \f[I]setgid\fP(2) system call.
+.TP 8n
+setgrent
+The \f[I]setgrent\fP(3) system call.
+.TP 8n
+setgroups \f[I]data_size\fP \f[I]data\fP
+The \f[I]setgroups\fP(2) system call.
+.TP 8n
+sethostname \f[I]name\fP [ \f[I]name_size\fP ]
+The \f[I]sethostname\fP(2) system call.
+.TP 8n
+setlinebuf \f[I]fp\fP
+The \f[I]setlinebuf\fP(3) system call.
+.TP 8n
+setpgid [ \f[I]pid\fP [ \f[I]pgid\fP ]]
+The \f[I]setpgid\fP(2) system call.
+.TP 8n
+setpgrp \f[I]pid\fP \f[I]pgid\fP
+The \f[I]setpgrp\fP(2) system call.
+.TP 8n
+setpriority \f[I]which\fP \f[I]who\fP \f[I]prio\fP
+The \f[I]setpriority\fP(2) system call.
+.TP 8n
+setregid \f[I]rgid\fP \f[I]egid\fP
+The \f[I]setregid\fP(2) system call.
+.TP 8n
+setreuid \f[I]ruid\fP \f[I]euid\fP
+The \f[I]setreuid\fP(2) system call.
+.TP 8n
+setresgid \f[I]rgid\fP \f[I]egid\fP \f[I]sgid\fP
+The \f[I]setresgid\fP(2) system call.
+.TP 8n
+setresuid \f[I]ruid\fP \f[I]euid\fP \f[I]suid\fP
+The \f[I]setresuid\fP(2) system call.
+.TP 8n
+setreuid \f[I]ruid\fP \f[I]euid\fP
+The \f[I]setreuid\fP(2) system call.
+.TP 8n
+setsid
+The \f[I]setsid\fP(2) system call.
+.TP 8n
+setsockopt \f[I]fildes\fP \f[I]level\fP \f[I]name\fP \f[I]data\fP \
+\f[I]data_size\fP
+The \f[I]setsockopt\fP(2) system call.
+.TP 8n
+settimeofday \f[I]tv\fP \f[I]tz\fP
+The \f[I]settimeofday\fP(2) system call.
+.TP 8n
+setuid \f[I]uid\fP
+The \f[I]setuid\fP(2) system call.
+.TP 8n
+setvbuf \f[I]fp\fP \f[I]data\fP \f[I]mode\fP \f[I]size\fP
+The \f[I]setvbuf\fP(3) system call.
+.TP 8n
+shmat \f[I]shmid\fP \f[I]shmaddr\fP \f[I]shmflg\fP
+The \f[I]shmat\fP(2) system call.
+.TP 8n
+shmctl \f[I]shmid\fP \f[I]command\fP \f[I]data\fP
+The \f[I]shmctl\fP(2) system call.
+.TP 8n
+signalfd \f[I]fildes\fP \f[I]mask\fP \f[I]flags\fP
+The \f[I]signalfd\fP(2) system call.
+.TP 8n
+sleep \f[I]seconds\fP
+The \f[I]sleep\fP(3) system call.
+.TP 8n
+socket \f[I]domain\fP \f[I]type\fP \f[I]protocol\fP
+The \f[I]socket\fP(2) system call.
+.TP 8n
+socketpair \f[I]domain\fP \f[I]type\fP \f[I]protocol\fP \f[I]sv\fP
+The \f[I]socketpair\fP(2) system call.
+.TP 8n
+stat \f[I]pathname\fP
+The \f[I]stat\fP(2) system call.
+.TP 8n
+statfs \f[I]pathname\fP \f[I]data\fP
+The \f[I]statfs\fP(2) system call.
+.TP 8n
+statvfs \f[I]pathname\fP \f[I]data\fP
+The \f[I]statvfs\fP(2) system call.
+.TP 8n
+stime \f[I]t\fP
+The \f[I]stime\fP(2) system call.
+.TP 8n
+strcoll \f[I]s1\fP \f[I]s2\fP
+The \f[I]strcoll\fP(3) system call.
+.TP 8n
+strdup \f[I]data\fP
+The \f[I]strdup\fP(3) system call.
+.TP 8n
+strerror
+The error given will be printed out with all known detail.
+.TP 8n
+strndup \f[I]data\fP \f[I]data_size\fP
+The \f[I]strndup\fP(3) system call.
+.TP 8n
+strtod \f[I]nptr\fP \f[I]endptr\fP
+The \f[I]strtod\fP(3) system call.
+.TP 8n
+strtof \f[I]nptr\fP \f[I]endptr\fP
+The \f[I]strtof\fP(3) system call.
+.TP 8n
+strtol \f[I]nptr\fP \f[I]endptr\fP \f[I]base\fP
+The \f[I]strtol\fP(3) system call.
+.TP 8n
+strtold \f[I]nptr\fP \f[I]endptr\fP
+The \f[I]strtold\fP(3) system call.
+.TP 8n
+strtoll \f[I]nptr\fP \f[I]endptr\fP \f[I]base\fP
+The \f[I]strtoll\fP(3) system call.
+.TP 8n
+strtoul \f[I]nptr\fP \f[I]endptr\fP \f[I]base\fP
+The \f[I]strtoul\fP(3) system call.
+.TP 8n
+strtoull \f[I]nptr\fP \f[I]endptr\fP \f[I]base\fP
+The \f[I]strtoull\fP(3) system call.
+.TP 8n
+symlink \f[I]oldpath\fP \f[I]newpath\fP
+The \f[I]symlink\fP(2) system call.
+.TP 8n
+system \f[I]command\fP
+The \f[I]system\fP(3) system call.
+.\" ----------  T  ---------------------------------------------------------
+.TP 8n
+tcdrain \f[I]fildes\fP
+The \f[I]tcdrain\fP(3) system call.
+.TP 8n
+tcflow \f[I]fildes\fP \f[I]action\fP
+The \f[I]tcflow\fP(3) system call.
+.TP 8n
+tcflush \f[I]fildes\fP \f[I]selector\fP
+The \f[I]tcflush\fP(3) system call.
+.TP 8n
+tcgetattr \f[I]fildes\fP \f[I]data\fP
+The \f[I]tcgetattr\fP(3) system call.
+.TP 8n
+tcsendbreak \f[I]fildes\fP \f[I]duration\fP
+The \f[I]tcsendbreak\fP(3) system call.
+.TP 8n
+tcsetattr \f[I]fildes\fP \f[I]options\fP \f[I]data\fP
+The \f[I]tcsetattr\fP(3) system call.
+.TP 8n
+telldir \f[I]dir\fP
+The \f[I]telldir\fP(3) system call.
+.TP 8n
+tempnam \f[I]dir\fP \f[I]prefix\fP
+The \f[I]tempnam\fP(3) system call.
+.TP 8n
+time \f[I]t\fP
+The \f[I]time\fP(2) system call.
+.TP 8n
+timerfd_create \f[I]clockid\fP \f[I]flags\fP
+The \f[I]timerfd_create\fP(2) system call.
+.TP 8n
+tmpfile
+The \f[I]tmpfile\fP(3) system call.
+.TP 8n
+tmpnam \f[I]pathname\fP
+The \f[I]tmpnam\fP(3) system call.
+.TP 8n
+truncate \f[I]pathname\fP \f[I]size\fP
+The \f[I]truncate\fP(2) system call.
+.\" ----------  U  ---------------------------------------------------------
+.TP 8n
+usleep \f[I]usec\fP
+The \f[I]usleep\fP(3) system call.
+.TP 8n
+uname \f[I]data\fP
+The \f[I]uname\fP(2) system call.
+.TP 8n
+ungetc \f[I]c\fP \f[I]fp\fP
+The \f[I]ungetc\fP(3) system call.
+.TP 8n
+unlink \f[I]pathname\fP
+The \f[I]unlink\fP(2) system call.
+.TP 8n
+unsetenv \f[I]name\fP
+The \f[I]unsetenv\fP(3) system call.
+.TP 8n
+ustat \f[I]dev\fP \f[I]ubuf\fP
+The \f[I]ustat\fP(2) system call.
+.TP 8n
+utime \f[I]pathname\fP [ \f[I]times\fP ]
+The \f[I]utime\fP(2) system call.
+.TP 8n
+utimens \f[I]pathname\fP [ \f[I]data\fP ]
+The \f[I]utimens\fP(2) system call.
+.TP 8n
+utimensat [ \f[I]fildes\fP ] \f[I]pathname\fP [ \f[I]data\fP [ \f[I]flags\fP ]]
+The \f[I]utimensat\fP(2) system call.
+.TP 8n
+utimes \f[I]pathname\fP \f[I]data\fP
+The \f[I]utimes\fP(2) system call.
+.\" ----------  V  ---------------------------------------------------------
+.TP 8n
+vasprintf \f[I]data\fP \f[I]format\fP \f[I]ap\fP
+The \f[I]vasprintf\fP(3) system call.
+.TP 8n
+vfork
+The \f[I]vfork\fP(2) system call.
+.\" ----------  W  ---------------------------------------------------------
+.TP 8n
+wait \f[I]status\fP
+The \f[I]wait\fP(2) system call.
+.TP 8n
+wait3 \f[I]status\fP \f[I]options\fP \f[I]rusage\fP
+The \f[I]wait3\fP(2) system call.
+.TP 8n
+wait4 \f[I]pid\fP \f[I]status\fP \f[I]options\fP \f[I]rusage\fP
+The \f[I]wait4\fP(2) system call.
+.TP 8n
+waitpid \f[I]pid\fP \f[I]status\fP \f[I]options\fP
+The \f[I]waitpid\fP(2) system call.
+.TP 8n
+write \f[I]fildes\fP \f[I]data\fP \f[I]data\[hy]size\fP
+The \f[I]write\fP(2) system call.
+.TP 8n
+writev \f[I]fildes\fP \f[I]data\fP \f[I]data\[hy]size\fP
+The \f[I]writev\fP(2) system call.
+.\" ----------  X  ---------------------------------------------------------
+.\" ----------  Y  ---------------------------------------------------------
+.\" ----------  Z  ---------------------------------------------------------
+.\" ------------------------------------------------------------------------
+.PP
+Do not include the perentheses used to make the call.
+.SH OPTIONS
+The \*(n) command understands the following options:
+.TP 8n
+\fB\-E\fP
+The exit staus, success or fail, will be printed immediately before
+the \f[I]access\fP command terminates.
+.TP 8n
+\f[B]\-e\fP \f[I]number\fP
+The value of \f[I]errno\fP as a number (\f[I]e.g.\fP 2),
+or as a symbol (\f[I]e.g.\fP ENOENT),
+or as the text of its meaning (\f[I]e.g.\fP No such file or directory\fP).
+You will need quotes to insulate spaces and punctuation from the shell.
+.TP 8n
+\f[B]\-V\fP
+Print the version of the \f[I]\*(n)\fP executing.
+.SH EXIT STATUS
+The \*(n) command exits with status 1 on any error.
+The \*(n) command only exits with status 0 if there are no errors.
+.SH COPYRIGHT
+.if n .ds C) (C)
+.if t .ds C) \(co
+.so etc/version.so
+\*(n) version \*(v)
+.br
+Copyright
+\*(C)
+\*(Y)
+Peter Miller
+.SH AUTHOR
+Written by Peter Miller <pmiller@opensource.org.au>
+.\" vim: set ts=8 sw=4 et :

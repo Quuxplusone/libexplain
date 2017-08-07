@@ -1,0 +1,401 @@
+.\"
+.\" libexplain - a library of system-call-specific strerror replacements
+.\" Copyright (C) 2010, 2011 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.ds n) explain_output
+.cp 0  \" Solaris defaults to ''.cp 1'', sheesh.
+.TH explain_output 3
+.SH NAME
+explain_output \- output error messages
+.if require_index \{
+.XX "explain_output(3)" "output error messages"
+.\}
+.SH SYNOPSIS
+.ft CW
+#include <libexplain/output.h>
+.ft R
+.SH DESCRIPTION
+These functions may be used to write error messages.
+.SS explain_output_message
+.ad l
+.ft CW
+void explain_output_message(const char *text);
+.ft R
+.ad b
+.PP
+The explain_output_message function is used to print
+text.  It is printed via the registered output class, see
+\f[I]explain_output_register\fP(3) for how.
+.TP 8n
+\f[I]text\fP
+The text of the message to be printed.
+It has not been wrapped (yet).
+.SS explain_output_error
+.ad l
+.ft CW
+void explain_output_error(const char *fmt, ...);
+.ft R
+.ad b
+.PP
+The explain_output_error function is used to print a formatted error
+message.  The printing is done via the \f[I]explain_output_message\fP(3)
+function.
+.TP 8n
+\f[I]fmt\fP
+The format text of the message to be printed.
+See \f[I]printf\fP(3) for more information.
+.SS explain_output_error_and_die
+.ad l
+.ft CW
+void explain_output_error_and_die(const char *fmt, ...);
+.ft R
+.ad b
+.PP
+The explain_output_error_and_die function is used to print
+text, and then terminate immediately.  The printing is
+done via the \f[I]explain_output_message\fP(3) function,
+process termination is via the
+\f[I]explain_output_exit_failure\fP(3) function.
+.TP 8n
+\f[I]fmt\fP
+The format text of the message to be printed.
+See printf(3) for more information.
+.SS explain_output_warning
+.ad l
+.ft CW
+void explain_output_warning(const char *fmt, ...);
+.ft R
+.ad b
+.PP
+The explain_output_warning function is used to print a formatted
+error message, including the word \[lq]warning\[rq].  The printing is done
+via the \f[I]explain_output_message\fP(3) function.
+.TP 8n
+\f[I]fmt\fP
+The format text of the message to be printed.
+See \f[I]printf\fP(3) for more information.
+.SS explain_output_exit
+.ad l
+.ft CW
+void explain_output_exit(int status);
+.ft R
+.ad b
+.PP
+The explain_output_exit function is used to terminate
+execution.  It is executed via the registered output class,
+\f[I]explain_output_register\fP(3) for how.
+.TP 8n
+\f[I]status\fP
+The exist status requested.
+.SS explain_output_exit_failure
+.ad l
+.ft CW
+void explain_output_exit_failure(void);
+.ft R
+.ad b
+.PP
+The explain_output_exit_failure function is used to terminate
+execution, with exit status EXIT_FAILURE.  It is executed via the
+registered output class, see \f[I]explain_output_register\fP(3) for how.
+.SS explain_option_hanging_indent_set
+.ad l
+.ft CW
+void explain_option_hanging_indent_set(int columns);
+.ft R
+.ad b
+.PP
+The explain_option_hanging_indent_set function is used to cause
+the output wrapping to use hanging indents.  By default no hanging
+indent is used, but this can sometimes obfuscate the end of one
+error message and the beginning of another.  A hanging indent
+results in continuation lines starting with white space, similar to
+RFC822 headers.
+.PP
+This can be set using the \[lq]\f[CW]hanging\[hy]indent=\fP\f[I]n\fP\[rq]
+string in the EXPLAIN_OPTIONS environment variable.
+See \f[I]explain\fP(3) for more information.
+.PP
+Using this function will override any environment variable setting.
+.TP 8n
+\f[I]columns\fP
+The number of columns of hanging indent to be used.  A value of
+0 means no hanging indent (all lines flush with left margin).
+A common value to use is 4: it doesn't consume too much of each
+line, and it is a clear indent.
+.SH OUTPUT REDIRECTION
+It is possible to change how and where libexplain sends its output,
+and even how it calls the \f[I]exit\fP(2) function.  This functionality is
+used by the \f[CW]explain_*_or_die\fP and \f[CW]explain_*_on_error\fP functions.
+.PP
+By default, libexplain will wrap and print error messages on stderr,
+and call the \f[I]exit\fP(2) system call to terminate execution.
+.PP
+Clients of the libexplain library may choose to use some message
+handling facilities provided by libexplain, or they may choose to
+implement their own.
+.TP 8n
+\f[B]syslog\fP
+.RS
+To cause all output to be sent to syslog, use
+.PP
+.RS
+.ft CW
+explain_output_register(explain_output_syslog_new());
+.ft R
+.RE
+.PP
+This is useful for servers and daemons.
+.RE
+.TP 8n
+\f[B]stderr and syslog\fP
+.RS
+The \[lq]tee\[rq] output class can be used to duplicate output.
+To cause all output to be sent to both stderr and syslog, use
+.PP
+.RS
+.nf
+.ft CW
+explain_output_register
+(
+    explain_output_tee_new
+    (
+        explain_output_stderr_new(),
+        explain_output_syslog_new()
+    )
+);
+.ft R
+.fi
+.RE
+.PP
+If you need more than two, use several instances of \[lq]tee\[rq], cascaded.
+.RE
+.TP 8n
+\f[B]stderr and a file\fP
+.RS
+To cause all output to be sent to both stderr and a regular file, use
+.PP
+.RS
+.nf
+.ft CW
+explain_output_register
+(
+    explain_output_tee_new
+    (
+        explain_output_stderr_new(),
+        explain_output_file_new(filename, 0)
+    )
+);
+.ft R
+.fi
+.RE
+.RE
+.PP
+See the \f[CW]<libexplain/output.h>\fP file for extensive documentation.
+.SS explain_output_new
+.ad l
+.ft CW
+explain_output_t *explain_output_new(const explain_output_vtable_t *vtable);
+.ft R
+.ad b
+.PP
+The explain_output_new function may be used to create a new
+dynamically allocated instance of explain_output_t.
+.TP 8n
+\f[I]vtable\fP
+The struct containing the pointers to the methods of the derived
+class.
+.TP 8n
+\f[I]returns\fP
+NULL on error (i.e. malloc failed), or a pointer to a new
+dynamically allocated instance of the class.
+.SS explain_output_stderr_new
+.ad l
+.ft CW
+explain_output_t *explain_output_stderr_new(void);
+.ft R
+.ad b
+.PP
+The explain_output_stderr_new function may be used to create a new
+dynamically allocated instance of an explain_output_t
+class that writes to stderr, and exits via \f[I]exit\fP(2);
+.PP
+This is the default output handler.
+.TP 8n
+\f[I]returns\fP
+NULL on error (i.e. malloc failed), or a pointer to a new
+dynamically allocated instance of the stderr class.
+.SS explain_output_syslog_new
+.ad l
+.ft CW
+explain_output_t *explain_output_syslog_new(void);
+.ft R
+.ad b
+.PP
+The explain_output_syslog_new function may be used to create a new
+dynamically allocated instance of an explain_output_t
+class that writes to syslog, and exits via \f[I]exit\fP(2);
+.PP
+The following values are used:
+.PP
+.RS
+.nf
+.ft CW
+option = 0
+facility = LOG_USER
+level = LOG_ERR
+.ft R
+.fi
+.RE
+.PP
+See \f[I]syslog\fP(3) for more information.
+.TP 8n
+\f[I]returns\fP
+NULL on error (i.e. \f[I]malloc\fP(3) failed), or a pointer to a new
+dynamically allocated instance of the syslog class.
+.SS explain_output_syslog_new1
+.ad l
+.ft CW
+explain_output_t *explain_output_syslog_new1(int level);
+.ft R
+.ad b
+.PP
+The explain_output_syslog_new1 function may be used to create a new
+dynamically allocated instance of an explain_output_t class that
+writes to syslog, and exits via \f[I]exit\fP(2);
+.PP
+The following values are used:
+.PP
+.RS
+.nf
+.ft CW
+option = 0
+facility = LOG_USER
+.ft R
+.fi
+.RE
+.PP
+See \f[I]syslog\fP(3) for more information.
+.TP 8n
+\f[I]level\fP
+The syslog level to be used, see syslog(3) for a definition.
+.TP 8n
+\f[I]returns\fP
+NULL on error (i.e. \f[I]malloc\fP(3) failed), or a pointer to a new
+dynamically allocated instance of the syslog class.
+.SS explain_output_syslog_new3
+.ad l
+.ft CW
+explain_output_t *explain_output_syslog_new3(int option, int facility,
+int level);
+.ft R
+.ad b
+.PP
+The explain_output_syslog_new3 function may be used to create a new
+dynamically allocated instance of an explain_output_t class that
+writes to syslog, and exits via \f[I]exit\fP(2);
+.PP
+If you want different facilities or levels, create multiple instances.
+.TP 8n
+\f[I]option\fP
+The syslog option to be used, see syslog(3) for a definition.
+.TP 8n
+\f[I]facility\fP
+The syslog facility to be used, see syslog(3) for a definition.
+.TP 8n
+\f[I]level\fP
+The syslog level to be used, see syslog(3) for a definition.
+.TP 8n
+\f[I]returns\fP
+NULL on error (i.e. \f[I]malloc\fP(3) failed), or a pointer to a new
+dynamically allocated instance of the syslog class.
+.SS explain_output_file_new
+.ad l
+.ft CW
+explain_output_t *explain_output_file_new(const char *filename, int append);
+.ft R
+.ad b
+.PP
+The explain_output_file_new function may be used to create a new
+dynamically allocated instance of an explain_output_t class that
+writes to a file, and exits via \f[I]exit\fP(2).
+.TP 8n
+\f[I]filename\fP
+The file to be opened and written to.
+.TP 8n
+\f[I]append\fP
+true (non\[hy]zero) if messages are to be appended to the file,
+false (zero) if the file is to be replaced with new contents.
+.TP 8n
+\f[I]returns\fP
+NULL on error (i.e. \f[I]malloc\fP(3) or \f[I]open\fP(2) failed), or a
+pointer to a new dynamically allocated instance of the syslog class.
+.SS explain_output_tee_new
+.ad l
+.ft CW
+explain_output_t *explain_output_tee_new(explain_output_t *first,
+explain_output_t *second);
+.ft R
+.ad b
+.PP
+The explain_output_tee_new function may be used to create a new
+dynamically allocated instance of an explain_output_t class that
+writes to \f[B]two\fP other output classes.
+.TP 8n
+\f[I]first
+The first output class to write to.
+.TP 8n
+\f[I]second
+The second output class to write to.
+.TP 8n
+\f[I]returns
+NULL on error (i.e. \f[I]malloc\fP(3) failed), or a pointer to a new
+dynamically allocated instance of the syslog class.
+.PP
+The output subsystem will \[lq]own\[rq] the \f[I]first\fP and
+\f[I]second\fP objects after this call.  You may not make any reference
+to these pointers ever again.  The output subsystem will destroy these
+objects and free the memory when it feels like it.
+.SS explain_output_register
+.ad l
+.ft CW
+void explain_output_register(explain_output_t *op);
+.ft R
+.ad b
+.PP
+The explain_output_register function is used to change libexplain's
+default output handling facilities with something else.  The NULL
+pointer restores libexplain's default processing.
+.PP
+If no output class is registered, the default is to wrap and print
+to stderr, and to exit via the \f[I]exit\fP(2) system call.
+.TP 8n
+\f[I]op\fP
+Pointer to the explain_output_t instance to be operated on.
+.PP
+The output subsystem will \[lq]own\[rq] the pointer after this call.
+You may not make any reference to this pointer ever again.  The output
+subsystem will destroy the object and free the memory when it feels like
+it.
+.SH COPYRIGHT
+.so etc/version.so
+.if n .ds C) (C)
+.if t .ds C) \(co
+libexplain version \*(v)
+.br
+Copyright \*(C) 2010 Peter Miller
+.SH AUTHOR
+Written by Peter Miller <pmiller@opensource.org.au>

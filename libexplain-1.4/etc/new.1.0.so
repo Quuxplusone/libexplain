@@ -1,0 +1,62 @@
+.\"
+.\" libexplain - a library of system-call-specific strerror replacements
+.\" Copyright (C) 2012 Peter Miller
+.\" Written by Peter Miller <pmiller@opensource.org.au>
+.\"
+.\" This program is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by the Free
+.\" Software Foundation; either version 3 of the License, or (at your option)
+.\" any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful, but
+.\" WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+.\" or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+.\" for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along
+.\" with this program. If not, see <http://www.gnu.org/licenses/>.
+.\"
+.\" ------------------------------------------------------------------------
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 14, 22, 25, 28, 30, 31, 32, 34, 38, 39, 40, 42
+Explanations are now available for errors reported by the
+\f[I]execv\fP(3),
+\f[I]getresgid\fP(2),
+\f[I]getresuid\fP(2),
+\f[I]lchmod\fP(2),
+\f[I]setgid\fP(2)
+\f[I]setregid\fP(2),
+\f[I]setresgid\fP(2),
+\f[I]setresuid\fP(2),
+\f[I]setreuid\fP(2),
+\f[I]setuid\fP(2) and
+\f[I]utimens\fP(2)
+system calls.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 45
+Emanuel Haupt <ehaupt@critical.ch> discovered that the error
+handling for \f[I]shmat\fP(2) on BSD needed more portability work.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 37
+There are new \f[CW]explain_filename_from_stream\fP and
+\f[CW]explain_filename_from_fildes\fP functions to the public API. This
+gives library clients access to libexplain's idea of the filename.
+.TP 2n
+.if n *
+.if t \(bu
+.\" Change 11
+Michael Cree <mcree@orcon.net.nz> discovered that there was a
+problem building libexplain on alpha architecture.
+.br
+Debian: Closes: #661440
+.\" ------------------------------------------------------------------------
+.\" Add new entries above this line.
+.ne 2i
+.SS Version 1.0 (2012\[hy]May\[hy]19)
+.\" vim: set ts=8 sw=4 et :
